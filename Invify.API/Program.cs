@@ -23,7 +23,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>
         options.Password.RequireUppercase = false;
         options.Password.RequireLowercase = false;
     })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddRoles<IdentityRole>() 
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add services to the container.
 
