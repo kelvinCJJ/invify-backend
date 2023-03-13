@@ -1,11 +1,11 @@
-﻿using Invify.Domain.DomainModels;
+﻿using Invify.Domain.Entities.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Invify.Infrastructure.Identity;
 
-public class IdentityDbContext : IdentityDbContext<User>
+public class IdentityDbContext : IdentityDbContext<ApplicationUser>
 {
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
         : base(options)

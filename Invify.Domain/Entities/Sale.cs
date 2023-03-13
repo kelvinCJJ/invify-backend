@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Domain.DomainModels
+namespace Invify.Domain.Entities
 {
-    internal class Role
+    public class Sale : BaseEntity
     {
+        public DateTime SaleDate { get; set; }
     }
 }

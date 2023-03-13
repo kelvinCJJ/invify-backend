@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Invify.Infrastructure.Identity;
 using System;
 using Invify.Infrastructure.Configuration;
+using Invify.Domain.Entities.User;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,18 +14,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDefaultIdentity<IdentityUser>
+builder.Services.AddIdentityCore<IdentityUser>
     (options =>
     {
-        options.SignIn.RequireConfirmedAccount = true;
-        options.Password.RequireDigit = false;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.Password.RequireDigit = true;
         options.Password.RequiredLength = 6;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
         options.Password.RequireLowercase = false;
     })
     .AddRoles<IdentityRole>() 
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add services to the container.
 
@@ -46,7 +48,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseAuthentication();;
+ 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
