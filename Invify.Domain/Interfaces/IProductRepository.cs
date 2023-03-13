@@ -1,4 +1,4 @@
-﻿using Invify.Domain.Entities.ProductAggregate;
+﻿using Invify.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

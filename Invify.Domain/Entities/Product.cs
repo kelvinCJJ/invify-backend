@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Domain.Entities.ProductAggregate
+namespace Invify.Domain.Entities
 {
     public class Product : BaseEntity
     {
@@ -13,7 +13,6 @@ namespace Invify.Domain.Entities.ProductAggregate
         public string Description { get; set; }
         public decimal Price { get; set; }
         public decimal Cost { get; set; }
-        public int Quantity { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
     }

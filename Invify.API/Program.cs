@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Invify.Infrastructure.Identity;
 using System;
 using Invify.Infrastructure.Configuration;
 using Invify.Domain.Entities.User;
@@ -12,7 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
 builder.Services.AddIdentityCore<IdentityUser>
     (options =>
@@ -25,8 +24,7 @@ builder.Services.AddIdentityCore<IdentityUser>
         options.Password.RequireLowercase = false;
     })
     .AddRoles<IdentityRole>() 
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Add services to the container.
 

@@ -1,5 +1,4 @@
-﻿using Invify.Domain.Entities.ProductAggregate;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +11,7 @@ namespace Invify.Domain.Entities
         public int PurchaseId { get; set; }
         public Purchase Purchase { get; set; }
         public int ProductId { get; set; }
-        public Product Product { get; set; }
+        public List<Product> Products { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
     }

@@ -8,7 +8,7 @@ namespace Invify.Domain.Entities
 {
     public class BaseEntity
     {
-        public int Id { get; set; }
+        public int Id { get; set; }   
         public DateTime DateTimeCreated { get; set; }
         public DateTime DateTimeUpdated { get; set; }
     }
