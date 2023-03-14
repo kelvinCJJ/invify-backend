@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Domain.Entities
+namespace invify_backend.Dtos.Product
 {
-    public class Category : BaseEntity
+    internal class UpdateProductDTO
     {
-        public string Name { get; set; }
-
     }
 }

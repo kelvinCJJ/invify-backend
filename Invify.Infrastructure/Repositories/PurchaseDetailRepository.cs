@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Domain.Entities
+namespace Invify.Infrastructure.Repositories
 {
-    public class Category : BaseEntity
+    internal class PurchaseDetailRepository
     {
-        public string Name { get; set; }
-
     }
 }

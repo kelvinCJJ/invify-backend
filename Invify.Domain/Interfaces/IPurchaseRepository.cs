@@ -9,7 +9,7 @@ namespace Invify.Domain.Interfaces
 {
     public interface IPurchaseRepository
     {
-        Task<IEnumerable<Purchase>> GetAllAsync();
+        Task<List<Purchase>> GetAllAsync();
         Task<Purchase> GetByIdAsync(int id);
         Task AddAsync(Purchase purchase);
         Task UpdateAsync(Purchase purchase);

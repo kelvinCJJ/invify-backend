@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Invify.Domain.Entities
 {
-    public class Inventory
+    public class Inventory : BaseEntity
     {
         public int Id { get; set; }
         public int ProductId { get; set; }

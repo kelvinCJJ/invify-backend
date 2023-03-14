@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace invify_backend.Common.Interfaces
+namespace Invify.Infrastructure.Repositories
 {
-    public interface IIdentityService
+    internal class InventoryRepository
     {
-        Task<string> GetUserNameAsync(string userId);
-
     }
 }

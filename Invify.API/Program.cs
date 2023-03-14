@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
 using Invify.Infrastructure.Configuration;
-using Invify.Domain.Entities.User;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.CodeAnalysis.Host.Mef;
+using Invify.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //Add database connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString") ?? throw new InvalidOperationException("Connection String not found");
 
+// for EF
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
-builder.Services.AddIdentityCore<IdentityUser>
+
+builder.Services.AddIdentity<IdentityUser , IdentityRole>
     (options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
@@ -22,17 +27,29 @@ builder.Services.AddIdentityCore<IdentityUser>
         options.Password.RequireNonAlphanumeric = true;
         options.Password.RequireUppercase = true;
         options.Password.RequireLowercase = false;
-    })
-    .AddRoles<IdentityRole>() 
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-// Add services to the container.
+    }) 
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "Invify",
+        ValidAudience = "InvifyAuth",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("InvifySecret123"))
+    };
+});
 
+builder.Services.AddScoped<TokenGenerator, TokenGenerator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -46,7 +63,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
- 
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 
