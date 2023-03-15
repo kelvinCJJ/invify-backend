@@ -52,9 +52,8 @@ namespace Invify.Infrastructure.Configuration
         {
             builder.Entity<IdentityRole>().HasData
                 (
-                    new IdentityRole() {Name = "Manager", ConcurrencyStamp = "1", NormalizedName="Manager" },
-                    new IdentityRole() { Name = "Admin", ConcurrencyStamp = "2", NormalizedName = "User" },
-                    new IdentityRole() { Name = "Basic", ConcurrencyStamp = "3", NormalizedName = "User" }
+                    new IdentityRole() { Name = "Admin", ConcurrencyStamp = "1", NormalizedName = "Admin" },
+                    new IdentityRole() { Name = "Basic", ConcurrencyStamp = "2", NormalizedName = "User" }
                 );
 
         }

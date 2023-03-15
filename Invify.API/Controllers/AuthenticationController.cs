@@ -1,16 +1,10 @@
-﻿using Invify.Domain.Entities;
-using Invify.Infrastructure;
+﻿using Invify.Infrastructure;
+using invify_backend.Dtos;
 using invify_backend.Dtos.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Swashbuckle.Swagger;
-using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Invify.API.Controllers
 {
@@ -38,29 +32,40 @@ namespace Invify.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDTO userDto)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Register([FromBody] RegisterUserDTO userDto, string role = "Basic")
         {
-            //check if user exists
-            var userExists = await _userManager.FindByEmailAsync(userDto.Email);
-
-            //if user empty
-            if (userExists != null)
+            try
             {
-                return Ok(new { Value = "This email address already exists" });
+                //check if user exists
+                var userExists = await _userManager.FindByEmailAsync(userDto.Email);
+
+                //if user empty
+                if (userExists != null)
+                {
+                    return Ok(new { Value = "That email address already exists. Try another." });
+                }
+
+                IdentityUser user = new() { UserName = userDto.Username, Email = userDto.Email };
+                var result = await _userManager.CreateAsync(user, userDto.Password);
+
+                if (result.Succeeded && await _roleManager.RoleExistsAsync(role))
+                {
+                    await _userManager.AddToRoleAsync(user, role);
+                    return StatusCode(StatusCodes.Status200OK, new Response { Status = "success", Message = "You have registered successfully!" });
+                }
+                else
+                {
+                    return BadRequest(new Response { Status="fail", Message= "Role does not exist!"});
+                }
             }
-
-            var result = await _userManager.CreateAsync(
-                new IdentityUser { UserName = userDto.Username, Email = userDto.Email },
-                userDto.Password);
-
-            if (!result.Succeeded)
+            catch (Exception ex)
             {
-                return BadRequest(result.Errors);
+                _logger.LogError(ex, "Error while registering");
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "fail", Message = "Error while registering, please try again later" });
             }
-
-            //await _signInManager.SignInAsync(user, isPersistent: false);
-
-            return Ok(result);
         }
 
         [AllowAnonymous]
@@ -80,7 +85,7 @@ namespace Invify.API.Controllers
 
                 var roles = await _userManager.GetRolesAsync(user);
 
-                var accessToken = _tokenGenerator.GenerateToken(user);
+                var accessToken = _tokenGenerator.GenerateToken(user, roles.Last());
 
                 return Ok(new LoginResponseDTO
                 {
@@ -99,8 +104,16 @@ namespace Invify.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-            return Ok();
+            try
+            {
+                await _signInManager.SignOutAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while logging out");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error while logging out");
+            }
         }
 
     }

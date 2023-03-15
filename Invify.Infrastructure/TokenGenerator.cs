@@ -11,16 +11,25 @@ namespace Invify.Infrastructure
     public class TokenGenerator
     {
         private const int ExpirationMinutes = 60;
-        public string GenerateToken(IdentityUser user)
+        public string GenerateToken(IdentityUser user, string role)
         {
-            var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
-            var token = GenerateJwtToken(
-                GenerateClaims(user),
-                GenerateSigningCredentials(),
-                expiration
-            );
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(token);
+            try
+            {
+                var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
+                var token = GenerateJwtToken(
+                    GenerateClaims(user, role),
+                    GenerateSigningCredentials(),
+                    expiration
+                );
+                var tokenHandler = new JwtSecurityTokenHandler();
+                return tokenHandler.WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+
+            }
         }
 
         private JwtSecurityToken GenerateJwtToken(List<Claim> claims, SigningCredentials credentials,
@@ -33,7 +42,7 @@ namespace Invify.Infrastructure
                 signingCredentials: credentials
             );
 
-        private List<Claim> GenerateClaims(IdentityUser user)
+        private List<Claim> GenerateClaims(IdentityUser user, string role)
         {
             try
             {
@@ -42,10 +51,10 @@ namespace Invify.Infrastructure
                     new Claim(JwtRegisteredClaimNames.Sub, "InvifyAuthToken"),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim("username", user.UserName),
+                    new Claim("role", role),
                 };
+
                 return claims;
             }
             catch (Exception e)

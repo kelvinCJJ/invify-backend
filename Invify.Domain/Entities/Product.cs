@@ -14,7 +14,7 @@ namespace Invify.Domain.Entities
         public decimal Price { get; set; }
         public decimal Cost { get; set; }
         public int CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
     }
 
 }
