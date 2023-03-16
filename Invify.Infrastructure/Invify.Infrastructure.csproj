@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Invify.Application\Invify.Application.csproj" />
     <ProjectReference Include="..\Invify.Domain\Invify.Domain.csproj" />
   </ItemGroup>
 

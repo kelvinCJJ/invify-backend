@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>invify_backend</RootNamespace>
+    <RootNamespace>Invify</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -10,5 +10,9 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
   </ItemGroup>
+
+		<ItemGroup>
+			<ProjectReference Include="..\Invify.Domain\Invify.Domain.csproj" />
+		</ItemGroup>
 
 </Project>

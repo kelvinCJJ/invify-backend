@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace invify_backend.Dtos.Authentication
+namespace Invify.Dtos.Authentication
 {
     public class LoginRequestDTO
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace invify_backend.Dtos
+namespace Invify.Dtos
 {
     public class Response
     {

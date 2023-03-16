@@ -1,5 +1,5 @@
 ﻿using Invify.Domain.Entities;
-using Invify.Domain.Interfaces;
+using Invify.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,14 +25,6 @@ namespace Invify.Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        Task ISupplierRepository.DeleteAsync(Supplier supplier)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task ISupplierRepository.UpdateAsync(Supplier supplier)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

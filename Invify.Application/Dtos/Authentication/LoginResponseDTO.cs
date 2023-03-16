@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace invify_backend.Dtos.Authentication
+namespace Invify.Dtos.Authentication
 {
     public class LoginResponseDTO
     {

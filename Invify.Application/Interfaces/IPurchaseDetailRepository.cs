@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace invify_backend.Dtos.Product
+namespace Invify.Interfaces
 {
-    internal class UpdateProductDTO
+    public interface IPurchaseDetailRepository
     {
     }
 }

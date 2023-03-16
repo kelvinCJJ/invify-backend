@@ -3,20 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invify.Application", "invify-backend\Invify.Application.csproj", "{63B124B8-D7C7-4F48-83B9-B1C7F79879AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Invify.Application", "Invify.Application\Invify.Application.csproj", "{63B124B8-D7C7-4F48-83B9-B1C7F79879AF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BD45E48E-41A4-4F8C-847F-5CFC0BB4E168} = {BD45E48E-41A4-4F8C-847F-5CFC0BB4E168}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invify.Domain", "Invify.Domain\Invify.Domain.csproj", "{BD45E48E-41A4-4F8C-847F-5CFC0BB4E168}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Invify.Domain", "Invify.Domain\Invify.Domain.csproj", "{BD45E48E-41A4-4F8C-847F-5CFC0BB4E168}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invify.Infrastructure", "Invify.Infrastructure\Invify.Infrastructure.csproj", "{A22ABC6E-2EED-4AB2-B5F3-38A6A1CD7CC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Invify.Infrastructure", "Invify.Infrastructure\Invify.Infrastructure.csproj", "{A22ABC6E-2EED-4AB2-B5F3-38A6A1CD7CC3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{63B124B8-D7C7-4F48-83B9-B1C7F79879AF} = {63B124B8-D7C7-4F48-83B9-B1C7F79879AF}
 		{BD45E48E-41A4-4F8C-847F-5CFC0BB4E168} = {BD45E48E-41A4-4F8C-847F-5CFC0BB4E168}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Invify.API", "Invify.API\Invify.API.csproj", "{4CEEC662-814D-4EBA-8CC0-38B977E003AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Invify.API", "Invify.API\Invify.API.csproj", "{4CEEC662-814D-4EBA-8CC0-38B977E003AC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{63B124B8-D7C7-4F48-83B9-B1C7F79879AF} = {63B124B8-D7C7-4F48-83B9-B1C7F79879AF}
 		{A22ABC6E-2EED-4AB2-B5F3-38A6A1CD7CC3} = {A22ABC6E-2EED-4AB2-B5F3-38A6A1CD7CC3}

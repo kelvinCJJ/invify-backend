@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\invify-backend\Invify.Application.csproj" />
+    <ProjectReference Include="..\Invify.Application\Invify.Application.csproj" />
     <ProjectReference Include="..\Invify.Domain\Invify.Domain.csproj" />
     <ProjectReference Include="..\Invify.Infrastructure\Invify.Infrastructure.csproj" />
   </ItemGroup>

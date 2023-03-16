@@ -2,7 +2,7 @@
 
 using Invify.Domain.Entities;
 using Invify.Infrastructure.Configuration;
-using invify_backend.Dtos.Authentication;
+using Invify.Dtos.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

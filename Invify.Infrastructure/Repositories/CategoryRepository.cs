@@ -1,6 +1,6 @@
 ﻿using Invify.Domain.Entities;
-using Invify.Domain.Interfaces;
 using Invify.Infrastructure.Configuration;
+using Invify.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -19,18 +19,13 @@ namespace Invify.Infrastructure.Repositories
             _context = applicationDbContext;
             _logger = logger;
         }
-        public Task AddAsync(Category category)
-        {
-            //Create a new category
-            _context.Category.Add(category);
-            //Save the changes
-            _context.SaveChanges();
-            //Return the task
-            return Task.CompletedTask;
 
+        public Task<Category> AddCategory(Category category)
+        {
+            throw new NotImplementedException();
         }
 
-        public Task DeleteAsync(Category category)
+        public Task<Category> DeleteCategory(int id)
         {
             throw new NotImplementedException();
         }
@@ -45,7 +40,19 @@ namespace Invify.Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(Category category)
+        public Task<IEnumerable<Category>> GetCategories()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Category> GetCategory(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+       
+
+        public Task<Category> UpdateCategory(Category category)
         {
             throw new NotImplementedException();
         }
