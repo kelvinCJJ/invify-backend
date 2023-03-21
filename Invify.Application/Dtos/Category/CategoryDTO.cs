@@ -5,9 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Interfaces
+namespace Invify.Dtos.Category
 {
-    public interface IPurchaseRepository : IRepositoryBase<Purchase>
+    public class CategoryDTO
     {
+        public string Name { get; set; }
+        public DateTime DateTimeCreated { get; set; }
+
     }
 }

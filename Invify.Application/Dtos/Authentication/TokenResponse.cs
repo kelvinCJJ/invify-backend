@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Invify.Dtos.Authentication
 {
-    public class LoginResponseDTO
+    public class TokenResponse
     {
+        public string UserId { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
         public string Token { get; set; }

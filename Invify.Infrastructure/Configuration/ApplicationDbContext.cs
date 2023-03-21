@@ -17,18 +17,18 @@ namespace Invify.Infrastructure.Configuration
         {
 
         }
-        public DbSet<Category> Category { get; set; }
-        public DbSet<Inventory> Inventory { get; set; }
-        public DbSet<Product> Product { get; set; }
-        public DbSet<Purchase> Purchase { get; set; }
-        public DbSet<PurchaseDetail> PurchaseDetail { get; set; }
-        public DbSet<Sale> Sale { get; set; }
-        public DbSet<Supplier> Supplier { get; set; }
+        public DbSet<Category>? Categories { get; set; }
+        public DbSet<Inventory>? Inventories { get; set; }
+        public DbSet<Product>? Products { get; set; }
+        public DbSet<Purchase>? Purchases { get; set; }
+        public DbSet<Sale>? Sales { get; set; }
+        public DbSet<Supplier>? Suppliers { get; set; }
+        public DbSet<StockTake>? Stocks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            
+
             builder.Entity<IdentityUser>().ToTable("Users");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
@@ -40,23 +40,62 @@ namespace Invify.Infrastructure.Configuration
             builder.Entity<Inventory>().ToTable("Inventory");
             builder.Entity<Product>().ToTable("Product");
             builder.Entity<Purchase>().ToTable("Purchase");
-            builder.Entity<PurchaseDetail>().ToTable("PurchaseDetail");
             builder.Entity<Sale>().ToTable("Sale");
+            builder.Entity<StockTake>().ToTable("StockTake");
             builder.Entity<Supplier>().ToTable("Supplier");
 
-            
+            SeedData(builder);
 
         }
 
         private void SeedData(ModelBuilder builder)
         {
-            builder.Entity<IdentityRole>().HasData
-                (
-                    new IdentityRole() { Name = "Admin", ConcurrencyStamp = "1", NormalizedName = "Admin" },
-                    new IdentityRole() { Name = "Basic", ConcurrencyStamp = "2", NormalizedName = "User" }
+            IdentityUser user = new IdentityUser()
+            {
+                Id = "3c54f767-53fa-476d-9578-4b4742c5089e",
+                UserName = "Admin",
+                Email = "2001427@sit.singaporetech.edu.sg",
+                LockoutEnabled = false,
+                EmailConfirmed= false,
+            };
+
+            PasswordHasher<IdentityUser> passwordHasher = new PasswordHasher<IdentityUser>();
+            passwordHasher.HashPassword(user, "P@ssw0rd");
+
+            builder.Entity<IdentityUser>().HasData(user);
+
+            builder.Entity<IdentityRole>().HasData(
+               new IdentityRole() { Id = "e44ee8f2-b407-4a9c-827f-34df3fa045ad", Name = "Basic", ConcurrencyStamp = "1", NormalizedName = "User" },
+               new IdentityRole() { Id = "b71102db-b78e-4ae1-80c0-718321b42ae3", Name = "Admin", ConcurrencyStamp = "2", NormalizedName = "Admin" }
+               );
+
+            builder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>() { RoleId = "b71102db-b78e-4ae1-80c0-718321b42ae3", UserId = "3c54f767-53fa-476d-9578-4b4742c5089e" }
                 );
+
+            builder.Entity<Category>().HasData
+                (
+                    new Category() { Id = 1, Name = "Electronics" },
+                    new Category() { Id = 2, Name = "Clothing" },
+                    new Category() { Id = 3, Name = "Mask" },
+                    new Category() { Id = 4, Name = "Lifestyle" },
+                    new Category() { Id = 5, Name = "Furniture" },
+                    new Category() { Id = 6, Name = "Other" }
+                );
+
+            //data seed for product
+            builder.Entity<Product>().HasData
+                (
+                // create product data
+                new Product() { Id = 1, Name = "iPhone 14 Pro Max", Description = "iPhone 14 Pro Max 128GB", CategoryId = 1, Price = 1999.99M,Cost = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8)},
+                new Product() { Id = 2, Name = "iPhone 14 Pro", Description = "iPhone 12 Pro 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+                new Product() { Id = 3, Name = "iPhone 14 Plus", Description = "iPhone 12 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+                new Product() { Id = 4, Name = "iPhone 13 Pro Max", Description = "iPhone 11 Pro Max 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+                new Product() { Id = 5, Name = "iPhone 13 Pro", Description = "iPhone 11 Pro 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+                new Product() { Id = 6, Name = "iPhone 13", Description = "iPhone 11 128GB", CategoryId = 1, Price = 1399.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), }
+                );
+
 
         }
     }
 }
-    

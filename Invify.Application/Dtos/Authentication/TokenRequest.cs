@@ -2,7 +2,7 @@
 
 namespace Invify.Dtos.Authentication
 {
-    public class LoginRequestDTO
+    public class TokenRequest
     {
         [Required]
         public string UserName { get; set; }

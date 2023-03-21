@@ -7,6 +7,8 @@ using System.Text;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Invify.Infrastructure;
 using Microsoft.OpenApi.Models;
+using Invify.Infrastructure.Repositories;
+using Invify.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +21,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
 
-builder.Services.AddIdentity<IdentityUser , IdentityRole>
-    (options =>
+builder.Services.AddIdentity<IdentityUser , IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.Password.RequireDigit = true;
@@ -32,6 +33,15 @@ builder.Services.AddIdentity<IdentityUser , IdentityRole>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("CorsPolicy",
+                   builder => builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader());
+    });
+
+builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -63,7 +73,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-builder.Services.AddScoped<TokenGenerator, TokenGenerator>();
+
+//builder.Services.AddScoped<TokenGenerator, TokenGenerator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

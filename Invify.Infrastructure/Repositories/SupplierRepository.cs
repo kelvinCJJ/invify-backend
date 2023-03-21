@@ -1,4 +1,5 @@
 ﻿using Invify.Domain.Entities;
+using Invify.Infrastructure.Configuration;
 using Invify.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -8,23 +9,11 @@ using System.Threading.Tasks;
 
 namespace Invify.Infrastructure.Repositories
 {
-    public class SupplierRepository : ISupplierRepository
+    public class SupplierRepository : RepositoryBase<Supplier>, ISupplierRepository
     {
-        public Task AddAsync(Supplier supplier)
+        public SupplierRepository(ApplicationDbContext applicationDbContext)
+        : base(applicationDbContext)
         {
-            throw new NotImplementedException();
         }
-
-        public Task<IEnumerable<Supplier>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Supplier> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-       
     }
 }

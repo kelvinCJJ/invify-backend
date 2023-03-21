@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Dtos.Product
+namespace Invify.Dtos.Inventory
 {
-    internal class UpdateProductDTO
+    internal class InventoryDTO
     {
     }
 }

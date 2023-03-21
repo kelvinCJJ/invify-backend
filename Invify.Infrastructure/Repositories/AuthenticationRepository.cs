@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Invify.Infrastructure.Repositories
 {
-    internal class PurchaseDetailRepository
+    public class AuthenticationRepository
     {
+
     }
 }

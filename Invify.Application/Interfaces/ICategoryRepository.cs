@@ -7,14 +7,8 @@ using Invify.Domain.Entities;
 
 namespace Invify.Interfaces
 {
-    public interface ICategoryRepository
-    {
-        //create interface for category
-        Task<IEnumerable<Category>> GetCategories();
-        Task<Category> GetCategory(int id);
-        Task<Category> AddCategory(Category category);
-        Task<Category> UpdateCategory(Category category);
-        Task<Category> DeleteCategory(int id);
+    public interface ICategoryRepository : IRepositoryBase<Category>
+    {      
         
     }
 }

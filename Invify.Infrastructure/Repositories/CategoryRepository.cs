@@ -10,51 +10,12 @@ using System.Threading.Tasks;
 
 namespace Invify.Infrastructure.Repositories
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository : RepositoryBase<Category>, ICategoryRepository
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<CategoryRepository> _logger;   
-        public CategoryRepository(ApplicationDbContext applicationDbContext, ILogger<CategoryRepository> logger)
+        public CategoryRepository(ApplicationDbContext applicationDbContext)
+            :base(applicationDbContext)
         {
-            _context = applicationDbContext;
-            _logger = logger;
         }
 
-        public Task<Category> AddCategory(Category category)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Category> DeleteCategory(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Category>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Category> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Category>> GetCategories()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Category> GetCategory(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-       
-
-        public Task<Category> UpdateCategory(Category category)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

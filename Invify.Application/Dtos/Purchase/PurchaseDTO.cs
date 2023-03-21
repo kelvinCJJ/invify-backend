@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Interfaces
+namespace Invify.Dtos.Purchase
 {
-    public interface IPurchaseDetailRepository
+    internal class PurchaseDTO
     {
     }
 }

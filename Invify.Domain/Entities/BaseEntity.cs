@@ -11,8 +11,8 @@ namespace Invify.Domain.Entities
     {
         public int Id { get; set; }
         public DateTime DateTimeCreated { get; set; }
-        public DateTime DateTimeUpdated { get; set; }
-        public string CreatedBy { get; set; }
-        public string UpdatedBy { get; set; }
+        public DateTime? DateTimeUpdated { get; set; }
+        public DateTime? DateTimeDeleted { get; set; }
+
     }
 }
