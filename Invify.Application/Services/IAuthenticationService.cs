@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Invify.Services
 {
-    public interface IIdentityService
+    public interface IAuthenticationService
     {
-        Task<Response> LoginAsync(TokenRequest tokenRequest);
-        Task<Response> RegisterAsync(RegisterRequest registerRequest, string role);
+        Task<AuthenticationResponse> LoginAsync(AuthenticationRequest autne);
+        Task<Response> RegisterAsync(RegisterRequest registerRequest);
         Task<Response> LogoutAsync();
 
     }

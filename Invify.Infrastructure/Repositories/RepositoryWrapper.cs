@@ -104,9 +104,9 @@ namespace Invify.Infrastructure.Repositories
             _context = context;
         }
 
-        public void Save()
+        public async Task SaveAsync()
         {
-            _context.SaveChanges();
+           await _context.SaveChangesAsync();
         }
 
     }

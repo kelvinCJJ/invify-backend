@@ -1,56 +1,84 @@
-﻿using Invify.Domain.Entities;
+﻿using AutoMapper;
+using Invify.Domain.Entities;
 using Invify.Dtos;
+using Invify.Dtos.Category;
+using Invify.Infrastructure.Configuration;
 using Invify.Interfaces;
 using Invify.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Invify.API.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CategoryController : ControllerBase
     {
         private IRepositoryWrapper _repositoryWrapper;
         //generate methods for CRUD
 
-        public CategoryController(IRepositoryWrapper repositoryWrapper)
+        public CategoryController(
+            IRepositoryWrapper repositoryWrapper
+        )
         {
             _repositoryWrapper = repositoryWrapper;
         }
 
         [HttpGet("/categories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
-            var categories = await _repositoryWrapper.Category.FindAllAsync();
-            return Ok();
+            try
+            {
+                var categories = await _repositoryWrapper.Category.GetAllCategoryAsync();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+            }
         }
 
         [HttpGet("categories/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCategoryById(int id)
+        public async Task<IActionResult> GetCategoryByName(string name)
         {
-            var category = await _repositoryWrapper.Category.FindByConditionAsync(c => c.Id == id);
-            return Ok();
+            var category = await _repositoryWrapper.Category.GetCategoryByNameAsync(name);
+            if (category == null)
+            {
+                return BadRequest(ModelState);
+            }
+            else
+            {
+                return Ok(category);
+            }
         }
 
         [HttpPost("categories")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateCategory([FromBody] Category category)
+        public async Task<IActionResult> CreateCategory(CategoryDTO category)
         {
             try
             {
-                await _repositoryWrapper.Category.CreateAsync(category);
+                var cat = new Category
+                {
+                    Name = category.Name,
+                    DateTimeCreated = DateTime.UtcNow.AddHours(8)                    
+                };
+                await _repositoryWrapper.Category.CreateAsync(cat);
                 return Ok();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "fail", Message = "Error while registering, please try again later" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while registering, please try again later" });
             }
         }
 
@@ -72,8 +100,5 @@ namespace Invify.API.Controllers
             await _repositoryWrapper.Category.DeleteAsync(category.Result.First());
             return Ok();
         }
-
-
-
     }
 }

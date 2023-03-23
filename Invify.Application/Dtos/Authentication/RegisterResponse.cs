@@ -9,13 +9,8 @@ namespace Invify.Dtos.Authentication
 {
     public class RegisterResponse
     {
-        [Required]
-        [EmailAddress]
         public string Email { get; set; }
-        [Required]
         public string Username { get; set; }
-        [Required]
-        [DataType(DataType.Password)]
         public string Password { get; set; }
     }
 }

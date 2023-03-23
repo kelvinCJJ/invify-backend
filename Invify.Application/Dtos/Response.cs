@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Invify.Dtos
+﻿namespace Invify.Dtos
 {
     public class Response
     {
-        public string Status { get; set; } = null;
+        public bool Success { get; set; } = false;
         public string Message { get; set; } = null;
-
+        public object? Value { get; set; } = null;
+        public IEnumerable<string> Errors { get; set; }
 
     }
 }

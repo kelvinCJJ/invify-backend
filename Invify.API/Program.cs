@@ -1,14 +1,15 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Invify.Infrastructure.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.CodeAnalysis.Host.Mef;
+using Invify.Identity;
 using Invify.Infrastructure;
-using Microsoft.OpenApi.Models;
+using Invify.Infrastructure.Configuration;
 using Invify.Infrastructure.Repositories;
 using Invify.Interfaces;
+using Invify.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
 
-builder.Services.AddIdentity<IdentityUser , IdentityRole>(options =>
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.Password.RequireDigit = true;
@@ -29,7 +30,7 @@ builder.Services.AddIdentity<IdentityUser , IdentityRole>(options =>
         options.Password.RequireNonAlphanumeric = true;
         options.Password.RequireUppercase = true;
         options.Password.RequireLowercase = false;
-    }) 
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -41,7 +42,12 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader());
     });
 
+
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+
+builder.Services.AddSingleton<TokenGenerator, TokenGenerator>();
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -59,22 +65,24 @@ builder.Services.AddSwaggerGen(options =>
         });
     }
 );
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
-    options.TokenValidationParameters = new TokenValidationParameters
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = false,   //for dev
-        ValidateAudience = false, //for dev
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = "Invify",
-        ValidAudience = "InvifyAuth",
-        RequireExpirationTime= false, //for dev -- needs to be udpated wgeb refresh token is added
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("InvifySecret123"))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,   //for dev
+            ValidateAudience = false, //for dev
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "Invify",
+            ValidAudience = "InvifyAuth",
+            RequireExpirationTime = false, //for dev -- needs to be udpated wgeb refresh token is added
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
+        };
+    });
 
 
-//builder.Services.AddScoped<TokenGenerator, TokenGenerator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,13 +92,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();

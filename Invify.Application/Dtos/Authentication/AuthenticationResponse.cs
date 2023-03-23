@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace Invify.Dtos.Authentication
 {
-    public class TokenResponse
+    public class AuthenticationResponse : Response
     {
         public string UserId { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
         public string Token { get; set; }
+        
     }
 }

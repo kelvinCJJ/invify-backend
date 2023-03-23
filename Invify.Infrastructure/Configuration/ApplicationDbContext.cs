@@ -73,27 +73,27 @@ namespace Invify.Infrastructure.Configuration
                 new IdentityUserRole<string>() { RoleId = "b71102db-b78e-4ae1-80c0-718321b42ae3", UserId = "3c54f767-53fa-476d-9578-4b4742c5089e" }
                 );
 
-            builder.Entity<Category>().HasData
-                (
-                    new Category() { Id = 1, Name = "Electronics" },
-                    new Category() { Id = 2, Name = "Clothing" },
-                    new Category() { Id = 3, Name = "Mask" },
-                    new Category() { Id = 4, Name = "Lifestyle" },
-                    new Category() { Id = 5, Name = "Furniture" },
-                    new Category() { Id = 6, Name = "Other" }
-                );
+            //builder.Entity<Category>().HasData
+            //    (
+            //        new Category() { Id = Guid.NewGuid(), Name = "Electronics",},
+            //        new Category() { Id = Guid.NewGuid(), Name = "Clothing" },
+            //        new Category() { Id = Guid.NewGuid(), Name = "Mask" },
+            //        new Category() { Id = Guid.NewGuid(), Name = "Lifestyle" },
+            //        new Category() { Id = Guid.NewGuid(), Name = "Furniture" },
+            //        new Category() { Id = Guid.NewGuid(), Name = "Other" }
+            //    );
 
-            //data seed for product
-            builder.Entity<Product>().HasData
-                (
-                // create product data
-                new Product() { Id = 1, Name = "iPhone 14 Pro Max", Description = "iPhone 14 Pro Max 128GB", CategoryId = 1, Price = 1999.99M,Cost = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8)},
-                new Product() { Id = 2, Name = "iPhone 14 Pro", Description = "iPhone 12 Pro 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
-                new Product() { Id = 3, Name = "iPhone 14 Plus", Description = "iPhone 12 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
-                new Product() { Id = 4, Name = "iPhone 13 Pro Max", Description = "iPhone 11 Pro Max 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
-                new Product() { Id = 5, Name = "iPhone 13 Pro", Description = "iPhone 11 Pro 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
-                new Product() { Id = 6, Name = "iPhone 13", Description = "iPhone 11 128GB", CategoryId = 1, Price = 1399.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), }
-                );
+            ////data seed for product
+            //builder.Entity<Product>().HasData
+            //    (
+            //    // create product data
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 14 Pro Max", Description = "iPhone 14 Pro Max 128GB", CategoryId = 1, Price = 1999.99M,Cost = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8),},
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 14 Pro", Description = "iPhone 12 Pro 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 14 Plus", Description = "iPhone 12 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 13 Pro Max", Description = "iPhone 11 Pro Max 128GB", CategoryId = 1, Price = 1799.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 13 Pro", Description = "iPhone 11 Pro 128GB", CategoryId = 1, Price = 1599.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), },
+            //    new Product() { Id = Guid.NewGuid(), Name = "iPhone 13", Description = "iPhone 11 128GB", CategoryId = 1, Price = 1399.99M, DateTimeCreated = DateTime.UtcNow.AddHours(8), }
+            //    );
 
 
         }

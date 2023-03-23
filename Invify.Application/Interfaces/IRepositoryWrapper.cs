@@ -14,6 +14,6 @@ namespace Invify.Interfaces
         IPurchaseRepository Purchase { get; }
         ISaleRepository Sale { get; }
         ISupplierRepository Supplier { get; }
-        void Save();
+        Task SaveAsync();
     }
 }

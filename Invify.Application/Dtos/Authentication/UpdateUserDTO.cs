@@ -9,12 +9,15 @@ namespace Invify.Dtos.Authentication
 {
     public class UpdateUserDTO
     {
+        [Required]
         public string Email { get; set; }
-
+        
+        [Required]
+        [StringLength(50, ErrorMessage = "Username must be less then 50 characters")]
         public string Username { get; set; }
 
         [Required]
-        [DataType(DataType.Password)]
+        [DataType(DataType.Password)]        
         public string OldPassword { get; set; }
 
         [DataType(DataType.Password)]

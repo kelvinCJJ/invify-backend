@@ -1,22 +1,20 @@
-﻿using Invify.Infrastructure;
-using Invify.Dtos;
+﻿using Invify.Dtos;
 using Invify.Dtos.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Invify.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Invify.API.Controllers
 {
+    [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IIdentityService _identityService;
+        private IAuthenticationService _authenticationService;
 
         public AuthenticationController(
-            IIdentityService identityService)
+            IAuthenticationService authenticationService)
         {
-            _identityService = identityService;
+            _authenticationService = authenticationService;
         }
 
         [AllowAnonymous]
@@ -24,30 +22,23 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest, string role = "Basic")
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
             try
             {
-                if (registerRequest != null)
-                {
+                var authResponse = await _authenticationService.RegisterAsync(registerRequest);
 
-                    var userRegistered = await _identityService.RegisterAsync(registerRequest, role);
-                    if (userRegistered.Status == "success")
-                    {
-                        return Ok(userRegistered);
-                    }
-                    else
-                    {
-                        return BadRequest(userRegistered);
-                    }
+                if (authResponse.Success == true)
+                {
+                    return Ok(authResponse);
                 }
 
-                return BadRequest(new Response { Status = "fail", Message = "Role does not exist!" });
+                return BadRequest(authResponse);
 
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "fail", Message = "Error while registering, please try again later" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while registering, please try again later" });
             }
         }
 
@@ -56,24 +47,16 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Login([FromBody] TokenRequest tokenRequest)
+        public async Task<IActionResult> Login([FromBody] AuthenticationRequest tokenRequest)
         {
             try
             {
-
-                if (tokenRequest != null)
+                var user = await _authenticationService.LoginAsync(tokenRequest);
+                if (user == null)
                 {
-                    var user = await _identityService.LoginAsync(tokenRequest);
-                    if (user != null)
-                    {
-                        return Ok(user);
-                    }
-                    else
-                    {
-                        return BadRequest(new Response { Status = "fail", Message = "Role does not exist!" });
-                    }
-                }
+                    return NotFound(new Response { Success = false, Message = "Invalid username or password" });
 
+                }
                 return Ok();
             }
             catch (Exception ex)
@@ -88,7 +71,7 @@ namespace Invify.API.Controllers
         {
             try
             {
-                var response = await _identityService.LogoutAsync();
+                var response = await _authenticationService.LogoutAsync();
                 return Ok(response);
             }
             catch (Exception ex)
