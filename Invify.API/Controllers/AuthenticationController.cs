@@ -42,6 +42,7 @@ namespace Invify.API.Controllers
             }
         }
 
+        //login
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -52,12 +53,17 @@ namespace Invify.API.Controllers
             try
             {
                 var user = await _authenticationService.LoginAsync(tokenRequest);
-                if (user == null)
+                
+                if (user.Success == false)
                 {
-                    return NotFound(new Response { Success = false, Message = "Invalid username or password" });
-
+                    if (user.Errors != null)
+                    {
+                        return BadRequest(new Response { Success = false, Errors = user.Errors });
+                    }
+                    return BadRequest(new Response { Success = false, Errors = user.Errors });
+                    //return NotFound(new Response { Success = false, Message = "Invalid username or password" });
                 }
-                return Ok();
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -65,7 +71,7 @@ namespace Invify.API.Controllers
             }
         }
 
-        //
+        //logout
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {

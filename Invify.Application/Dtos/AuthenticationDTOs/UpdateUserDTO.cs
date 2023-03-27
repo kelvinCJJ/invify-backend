@@ -27,4 +27,6 @@ namespace Invify.Dtos.Authentication
         public string ConfirmPassword { get; set; }
 
     }
+
+
 }

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Invify.Dtos.Inventory
+namespace Invify.Dtos.CategoryDTOs
 {
-    public class InventoryDTO
+    internal class CategoryDetailsDTO
     {
     }
 }

@@ -13,8 +13,7 @@ namespace Invify.Dtos.Product
         public string Description { get; set; }
         public string SKU { get; set; }
         public decimal Price { get; set; }
-        public decimal Cost { get; set; }
-        
+        public decimal Cost { get; set; }        
         public int? CategoryId { get; set; }
 
     }

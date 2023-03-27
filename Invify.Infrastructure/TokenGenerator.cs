@@ -55,9 +55,10 @@ namespace Invify.Infrastructure
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, "InvifyAuthToken"),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)),
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.AddHours(8).ToString(CultureInfo.InvariantCulture)),
+                    new Claim(ClaimTypes.Email, user.Email),
                     new Claim("username", user.UserName),
-                    new Claim("role", role),
+                    new Claim(ClaimTypes.Role, role),
                 };
 
                 return claims;
@@ -72,7 +73,7 @@ namespace Invify.Infrastructure
         {
             return new SigningCredentials(
                 new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes("!InvifySecret12345!")
+                    Encoding.UTF8.GetBytes("InvifySecret12345")
                 ),
                 SecurityAlgorithms.HmacSha256
             );

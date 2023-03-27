@@ -1,21 +1,17 @@
-﻿using AutoMapper;
-using Invify.Domain.Entities;
+﻿using Invify.Domain.Entities;
 using Invify.Dtos;
-using Invify.Dtos.Category;
-using Invify.Infrastructure.Configuration;
+using Invify.Dtos.CategoryDTOs;
 using Invify.Interfaces;
-using Invify.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Invify.API.Controllers
 {
-    
-    [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     [ApiController]
-    [Authorize]
+    [Route("api/[controller]")]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles ="Admin")]
+    
     public class CategoryController : ControllerBase
     {
         private IRepositoryWrapper _repositoryWrapper;
@@ -45,7 +41,7 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpGet("categories/{id}")]
+        [HttpGet("category/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCategoryByName(string name)
@@ -61,10 +57,10 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpPost("categories")]
+        [HttpPost("category")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateCategory(CategoryDTO category)
+        public async Task<IActionResult> CreateCategory(CreateCategoryDTO category)
         {
             try
             {
@@ -82,7 +78,7 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpPost("categories/{id}")]
+        [HttpPost("category/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCategoryAsync([FromBody] Category category, int id)
@@ -91,7 +87,7 @@ namespace Invify.API.Controllers
             return Ok();
         }
 
-        [HttpDelete("categories/{id}")]
+        [HttpDelete("category/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteCategoryAsync(int id)

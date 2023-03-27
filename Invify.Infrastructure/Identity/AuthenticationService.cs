@@ -2,7 +2,9 @@
 using Invify.Dtos.Authentication;
 using Invify.Infrastructure;
 using Invify.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace Invify.Identity
@@ -51,19 +53,20 @@ namespace Invify.Identity
                 }
                 return new Response { Success = true, Message = "You have registered successfully!" };
             }
-            return new Response { Success = false, Message = "Unable to create user, please try again later" };
+            return new Response { Success = false, Message = "Unable to create user, please try again later", Errors = (IEnumerable<string>)result.Errors };
         }
 
         public async Task<AuthenticationResponse> LoginAsync(AuthenticationRequest authenticationRequest)
         {
-            var user = await _userManager.FindByNameAsync(authenticationRequest.Email);
+            var user = await _userManager.FindByEmailAsync(authenticationRequest.Email);
 
             if (user == null)
             {
                 return new AuthenticationResponse { Errors = new[] { "User does not exists" } };
             }
 
-            var result = await _signInManager.PasswordSignInAsync(authenticationRequest.Email, authenticationRequest.Email, false, false);
+            //var result = await _signInManager.PasswordSignInAsync(authenticationRequest.Email, authenticationRequest.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(user,authenticationRequest.Password,false,false);
 
             if (!result.Succeeded)
             {
@@ -76,6 +79,7 @@ namespace Invify.Identity
 
             var authenticationResponse = new AuthenticationResponse
             {
+                Success = true,
                 UserId = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
