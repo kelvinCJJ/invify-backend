@@ -53,16 +53,17 @@ namespace Invify.Identity
                 }
                 return new Response { Success = true, Message = "You have registered successfully!" };
             }
-            return new Response { Success = false, Message = "Unable to create user, please try again later", Errors = (IEnumerable<string>)result.Errors };
+            //return new Response { Success = false, Message = "Unable to create user, please try again later", Errors = (IEnumerable<string>)result.Errors };
+            return new Response { Success = false, Message = result.Errors.FirstOrDefault().Description };
         }
 
-        public async Task<AuthenticationResponse> LoginAsync(AuthenticationRequest authenticationRequest)
+        public async Task<Response> LoginAsync(AuthenticationRequest authenticationRequest)
         {
             var user = await _userManager.FindByEmailAsync(authenticationRequest.Email);
 
             if (user == null)
             {
-                return new AuthenticationResponse { Errors = new[] { "User does not exists" } };
+                return new Response { Success=false, Message =  "User does not exists" };
             }
 
             //var result = await _signInManager.PasswordSignInAsync(authenticationRequest.Email, authenticationRequest.Password, false, false);
@@ -70,7 +71,7 @@ namespace Invify.Identity
 
             if (!result.Succeeded)
             {
-                return new AuthenticationResponse { Errors = new[] { "Incorrect password"} };
+                return new Response {Success = false, Message = "Incorrect email or password"};
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -79,14 +80,13 @@ namespace Invify.Identity
 
             var authenticationResponse = new AuthenticationResponse
             {
-                Success = true,
                 UserId = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
                 Token = accessToken,
             };
 
-            return authenticationResponse;
+            return new Response { Success=true, Message="valid user", Value=authenticationResponse};
 
         }
 

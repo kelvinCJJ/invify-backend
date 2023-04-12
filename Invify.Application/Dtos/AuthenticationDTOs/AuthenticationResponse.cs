@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Invify.Dtos.Authentication
 {
-    public class AuthenticationResponse : Response
+    public class AuthenticationResponse
     {
         public string UserId { get; set; }
         public string UserName { get; set; }

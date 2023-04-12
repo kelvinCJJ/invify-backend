@@ -56,11 +56,11 @@ namespace Invify.API.Controllers
                 
                 if (user.Success == false)
                 {
-                    if (user.Errors != null)
+                    if (user.Message != null)
                     {
-                        return BadRequest(new Response { Success = false, Errors = user.Errors });
+                        return BadRequest(user);
                     }
-                    return BadRequest(new Response { Success = false, Errors = user.Errors });
+                    return BadRequest(user);
                     //return NotFound(new Response { Success = false, Message = "Invalid username or password" });
                 }
                 return Ok(user);

@@ -10,7 +10,7 @@ namespace Invify.Services
 {
     public interface IAuthenticationService
     {
-        Task<AuthenticationResponse> LoginAsync(AuthenticationRequest autne);
+        Task<Response> LoginAsync(AuthenticationRequest authenticationRequest);
         Task<Response> RegisterAsync(RegisterRequest registerRequest);
         Task<Response> LogoutAsync();
 
