@@ -11,7 +11,17 @@ namespace Invify.Dtos.CategoryDTOs
     public class CreateCategoryDTO
     {
         [Required]
-        [StringLength(100,ErrorMessage = "Category name cannot exceed 100 characters!")]
+        [StringLength(100, ErrorMessage = "Category name cannot exceed 100 characters!")]
         public string Name { get; set; }
+
+
+        //implicit
+        public static explicit operator CreateCategoryDTO(Category category)
+        {
+            return new CreateCategoryDTO
+            {
+                Name = category.Name
+            };
+        }
     }
 }

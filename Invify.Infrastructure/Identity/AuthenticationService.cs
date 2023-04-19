@@ -31,7 +31,7 @@ namespace Invify.Identity
             _logger = logger;
         }
 
-        public async Task<Response> RegisterAsync(RegisterRequest registerRequest)
+        public async Task<Response> RegisterAsync(RegisterRequest registerRequest, string role)
         {
             //check if user exists
             var userExists = await _userManager.FindByEmailAsync(registerRequest.Email);
@@ -47,9 +47,9 @@ namespace Invify.Identity
 
             if (result.Succeeded)
             {
-                if (await _roleManager.RoleExistsAsync(registerRequest.Role))
+                if (await _roleManager.RoleExistsAsync(role))
                 {
-                    await _userManager.AddToRoleAsync(user, registerRequest.Role);
+                    await _userManager.AddToRoleAsync(user, role);
                 }
                 return new Response { Success = true, Message = "You have registered successfully!" };
             }

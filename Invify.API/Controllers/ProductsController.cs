@@ -5,7 +5,7 @@ namespace Invify.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PurchaseController : ControllerBase
+    public class ProductsController : ControllerBase
     {
     }
 }

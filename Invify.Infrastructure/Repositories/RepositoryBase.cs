@@ -1,13 +1,8 @@
-﻿using Invify.Infrastructure.Configuration;
+﻿using Invify.Dtos;
+using Invify.Infrastructure.Configuration;
 using Invify.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Invify.Infrastructure.Repositories
 {
@@ -26,20 +21,43 @@ namespace Invify.Infrastructure.Repositories
         {
             return await _context.Set<T>().Where(expression).AsNoTracking().ToListAsync();
         }
-        public async Task CreateAsync(T entity)
+        public async Task<Response> CreateAsync(T entity)
         {
+            try { 
             await _context.Set<T>().AddAsync(entity);
             await _context.SaveChangesAsync();
+                return new Response { Success = true, Message = entity + "Created successfully" };
+            } catch (Exception ex)
+            {
+                return new Response { Success = false, Message = ex.Message };
+            }
+
         }
-        public async Task UpdateAsync(T entity)
-        {            
-            _context.Set<T>().Update(entity);
-            await _context.SaveChangesAsync();
-        }
-        public async Task DeleteAsync(T entity)
+        public async Task<Response> UpdateAsync(T entity)
         {
-            _context.Set<T>().Remove(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Set<T>().Update(entity);
+                await _context.SaveChangesAsync();
+
+                return new Response { Success = true, Message = entity + "Updated successfully" };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Success = false, Message = ex.Message };
+            }
+        }
+        public async Task<Response> DeleteAsync(T entity)
+        {
+            try
+            {
+                _context.Set<T>().Remove(entity);
+                await _context.SaveChangesAsync();
+                return new Response { Success = true, Message = entity + "Deleted successfully" };
+            } catch (Exception ex)
+            {
+                return new Response { Success = false, Message = ex.Message };
+            }
         }
 
 

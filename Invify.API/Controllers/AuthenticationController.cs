@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Invify.API.Controllers
 {
     [ApiController]
+    [Route("auth")]
     public class AuthenticationController : ControllerBase
     {
         private IAuthenticationService _authenticationService;
@@ -22,11 +23,11 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest, string? role = "basic")
         {
             try
             {
-                var authResponse = await _authenticationService.RegisterAsync(registerRequest);
+                var authResponse = await _authenticationService.RegisterAsync(registerRequest,role);
 
                 if (authResponse.Success == true)
                 {
@@ -54,16 +55,11 @@ namespace Invify.API.Controllers
             {
                 var user = await _authenticationService.LoginAsync(tokenRequest);
                 
-                if (user.Success == false)
+                if (user.Success == true)
                 {
-                    if (user.Message != null)
-                    {
-                        return BadRequest(user);
-                    }
-                    return BadRequest(user);
-                    //return NotFound(new Response { Success = false, Message = "Invalid username or password" });
+                    return Ok(user);
                 }
-                return Ok(user);
+                return BadRequest(user);
             }
             catch (Exception ex)
             {
@@ -72,7 +68,7 @@ namespace Invify.API.Controllers
         }
 
         //logout
-        [HttpPost("logout")]
+        [HttpGet("logout")]
         public async Task<IActionResult> Logout()
         {
             try

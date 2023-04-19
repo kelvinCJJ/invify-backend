@@ -11,7 +11,7 @@ namespace Invify.Services
     public interface IAuthenticationService
     {
         Task<Response> LoginAsync(AuthenticationRequest authenticationRequest);
-        Task<Response> RegisterAsync(RegisterRequest registerRequest);
+        Task<Response> RegisterAsync(RegisterRequest registerRequest, string role);
         Task<Response> LogoutAsync();
 
     }

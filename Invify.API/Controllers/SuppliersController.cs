@@ -6,7 +6,7 @@ namespace Invify.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SupplierController : ControllerBase
+    public class SuppliersController : ControllerBase
     {
         // GET: api/<SupplierController>
         [HttpGet]

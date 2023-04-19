@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Invify.Dtos;
+using System.Linq.Expressions;
 
 namespace Invify.Interfaces
 {
@@ -6,8 +7,8 @@ namespace Invify.Interfaces
     {
         Task<List<T>> FindAllAsync();
         Task<List<T>> FindByConditionAsync(Expression<Func<T, bool>> expression);
-        Task CreateAsync(T entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
+        Task<Response> CreateAsync(T entity);
+        Task<Response> UpdateAsync(T entity);
+        Task<Response> DeleteAsync(T entity);
     }
 }
