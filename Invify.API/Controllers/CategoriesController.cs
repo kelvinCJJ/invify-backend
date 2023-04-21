@@ -4,6 +4,7 @@ using Invify.Dtos.CategoryDTOs;
 using Invify.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Protocol.Core.Types;
 
 namespace Invify.API.Controllers
 {
@@ -80,9 +81,18 @@ namespace Invify.API.Controllers
         {
             try
             {
-                category.DateTimeCreated = DateTime.UtcNow.AddHours(8);         
+                
+                var isDuplicate = await _repositoryWrapper.Category.CheckForDuplicateAsync(x => x.Name == category.Name);
+                if (isDuplicate)
+                {
+                    // handle duplicate case
+                    return BadRequest(new Response { Success = false, Message = "Category already exists" });
+                }
+                // proceed with create/update operation
+                category.DateTimeCreated = DateTime.UtcNow.AddHours(8);
                 var res = await _repositoryWrapper.Category.CreateAsync(category);
                 return Ok(res);
+                
             }
             catch (Exception ex)
             {
@@ -95,6 +105,12 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCategoryAsync([FromBody] Category category, int id)
         {
+            var isDuplicate = await _repositoryWrapper.Category.CheckForDuplicateAsync(x => x.Name == category.Name);
+            if (isDuplicate)
+            {
+                // handle duplicate case
+                return BadRequest(new Response { Success = false, Message = "Category already exists" });
+            }
             await _repositoryWrapper.Category.UpdateAsync(category);
             return Ok();
         }

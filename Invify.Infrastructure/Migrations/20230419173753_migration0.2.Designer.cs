@@ -4,6 +4,7 @@ using Invify.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Invify.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230419173753_migration0.2")]
+    partial class migration02
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,7 +32,7 @@ namespace Invify.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -56,7 +58,7 @@ namespace Invify.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -95,7 +97,7 @@ namespace Invify.Infrastructure.Migrations
                     b.Property<decimal>("Cost")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -134,7 +136,7 @@ namespace Invify.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -175,7 +177,7 @@ namespace Invify.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -211,7 +213,7 @@ namespace Invify.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -243,7 +245,7 @@ namespace Invify.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DateTimeCreated")
+                    b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateTimeDeleted")
@@ -406,12 +408,12 @@ namespace Invify.Infrastructure.Migrations
                         {
                             Id = "3c54f767-53fa-476d-9578-4b4742c5089e",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "8704397b-a76c-40c9-b269-044eb54f3846",
+                            ConcurrencyStamp = "c8bf411e-00db-4743-be21-abdad764c8b3",
                             Email = "2001427@sit.singaporetech.edu.sg",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "9edaf32a-3a06-466f-87ee-155f808b1f3e",
+                            SecurityStamp = "2a6dbfda-689b-4602-8542-41845ad5dbee",
                             TwoFactorEnabled = false,
                             UserName = "Admin"
                         });

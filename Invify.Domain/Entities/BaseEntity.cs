@@ -12,7 +12,7 @@ namespace Invify.Domain.Entities
     {
         [Key]
         public int Id { get; set; }
-        public DateTime DateTimeCreated { get; set; }
+        public DateTime? DateTimeCreated { get; set; }
         public DateTime? DateTimeUpdated { get; set; }
         public DateTime? DateTimeDeleted { get; set; }
 

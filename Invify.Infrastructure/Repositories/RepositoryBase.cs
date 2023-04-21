@@ -21,12 +21,18 @@ namespace Invify.Infrastructure.Repositories
         {
             return await _context.Set<T>().Where(expression).AsNoTracking().ToListAsync();
         }
+
+        public async Task<bool> CheckForDuplicateAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _context.Set<T>().AnyAsync(expression);
+        }
+
         public async Task<Response> CreateAsync(T entity)
         {
             try { 
             await _context.Set<T>().AddAsync(entity);
             await _context.SaveChangesAsync();
-                return new Response { Success = true, Message = entity + "Created successfully" };
+                return new Response { Success = true, Message = entity.GetType().Name + " created successfully" };
             } catch (Exception ex)
             {
                 return new Response { Success = false, Message = ex.Message };
@@ -40,7 +46,7 @@ namespace Invify.Infrastructure.Repositories
                 _context.Set<T>().Update(entity);
                 await _context.SaveChangesAsync();
 
-                return new Response { Success = true, Message = entity + "Updated successfully" };
+                return new Response { Success = true, Message = entity.GetType().Name + " updated successfully" };
             }
             catch (Exception ex)
             {
@@ -53,7 +59,7 @@ namespace Invify.Infrastructure.Repositories
             {
                 _context.Set<T>().Remove(entity);
                 await _context.SaveChangesAsync();
-                return new Response { Success = true, Message = entity + "Deleted successfully" };
+                return new Response { Success = true, Message = entity.GetType().Name + " deleted successfully" };
             } catch (Exception ex)
             {
                 return new Response { Success = false, Message = ex.Message };
