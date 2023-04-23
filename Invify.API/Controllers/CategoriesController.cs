@@ -25,7 +25,7 @@ namespace Invify.API.Controllers
             _repositoryWrapper = repositoryWrapper;
         }
 
-        [HttpGet("all")]
+        [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -42,35 +42,39 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpGet("{name}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetCategoryByName(string name)
-        {
-            var category = await _repositoryWrapper.Category.GetCategoryByNameAsync(name);
-            if (category == null)
-            {
-                return BadRequest(ModelState);
-            }
-            else
-            {
-                return Ok(category);
-            }
-        }
+        //[HttpGet("{name}")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //public async Task<IActionResult> GetCategoryByName(string name)
+        //{
+        //    var category = await _repositoryWrapper.Category.GetCategoryByNameAsync(name);
+        //    if (category == null)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    else
+        //    {
+        //        return Ok(category);
+        //    }
+        //}
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCategoryById(int id)
         {
-            var category = await _repositoryWrapper.Category.FindByConditionAsync(c => c.Id == id);
-            if (category == null)
+            try
             {
-                return BadRequest(ModelState);
+                var category = await _repositoryWrapper.Category.FindByConditionAsync(c => c.Id == id);
+                if (category != null)
+                {
+                    return Ok(category);
+
+                }
+                return BadRequest(new Response { Success = false, Message = "category does not exist" });
             }
-            else
-            {
-                return Ok(category);
+            catch (Exception ex) {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
             }
         }
 
@@ -91,7 +95,7 @@ namespace Invify.API.Controllers
                 // proceed with create/update operation
                 category.DateTimeCreated = DateTime.UtcNow.AddHours(8);
                 var res = await _repositoryWrapper.Category.CreateAsync(category);
-                return Ok(res);
+                return Ok();
                 
             }
             catch (Exception ex)
@@ -111,6 +115,7 @@ namespace Invify.API.Controllers
                 // handle duplicate case
                 return BadRequest(new Response { Success = false, Message = "Category already exists" });
             }
+            category.DateTimeUpdated= DateTime.UtcNow.AddHours(8);
             await _repositoryWrapper.Category.UpdateAsync(category);
             return Ok();
         }

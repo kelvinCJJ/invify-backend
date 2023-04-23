@@ -22,6 +22,7 @@ namespace Invify.Infrastructure.Repositories
             return await _context.Set<T>().Where(expression).AsNoTracking().ToListAsync();
         }
 
+
         public async Task<bool> CheckForDuplicateAsync(Expression<Func<T, bool>> expression)
         {
             return await _context.Set<T>().AnyAsync(expression);
@@ -43,7 +44,9 @@ namespace Invify.Infrastructure.Repositories
         {
             try
             {
-                _context.Set<T>().Update(entity);
+                _context.Attach(entity);
+                _context.Entry(entity).State = EntityState.Modified;
+                //_context.Set<T>().Update(entity);
                 await _context.SaveChangesAsync();
 
                 return new Response { Success = true, Message = entity.GetType().Name + " updated successfully" };

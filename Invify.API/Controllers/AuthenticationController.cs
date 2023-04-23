@@ -23,7 +23,7 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest, string? role = "basic")
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest, string? role = "Admin")
         {
             try
             {
