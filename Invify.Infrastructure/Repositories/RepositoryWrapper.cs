@@ -17,6 +17,7 @@ namespace Invify.Infrastructure.Repositories
         private IPurchaseRepository _purchase;
         private ISaleRepository _sale;
         private ISupplierRepository _supplier;
+        private IStockTakeRepository _stocktake;
 
         public ICategoryRepository Category
         {
@@ -94,6 +95,19 @@ namespace Invify.Infrastructure.Repositories
                 }
 
                 return _supplier;
+            }
+        }
+
+        public IStockTakeRepository StockTake
+        {
+            get
+            {
+                if (_stocktake == null)
+                {
+                    _stocktake = new StockTakeRepository(_context);
+                }
+
+                return _stocktake;
             }
         }
 

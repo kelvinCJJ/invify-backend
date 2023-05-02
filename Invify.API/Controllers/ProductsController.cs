@@ -30,6 +30,7 @@ namespace Invify.API.Controllers
             try
             {
                 var products = await _repositoryWrapper.Product.FindAllAsync();
+                //var products2 = await _repositoryWrapper.Product.find();
                 //var productsDTO = new List<ProductDTO>();
 
                 //products.ForEach(product =>
