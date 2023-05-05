@@ -182,6 +182,48 @@ namespace Invify.API.Controllers
             }
         }
 
+        //get sales by date
+        [HttpGet("date/{date}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSalesByDate(DateTime date)
+        {
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.DateTimeCreated >= date.Date && c.DateTimeCreated < date.Date.AddDays(1));
+                if (sales != null)
+                {
+                    return Ok(sales);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
+        //get sales by date range
+        [HttpGet("daterange/{startDate}/{endDate}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSalesByDateRange(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.DateTimeCreated >= startDate.Date && c.DateTimeCreated < endDate.Date.AddDays(1));
+                if (sales != null)
+                {
+                    return Ok(sales);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
