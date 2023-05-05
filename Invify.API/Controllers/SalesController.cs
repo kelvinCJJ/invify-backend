@@ -1,6 +1,7 @@
 ﻿using Invify.Domain.Entities;
 using Invify.Dtos;
 using Invify.Interfaces;
+using Invify_API;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,34 @@ namespace Invify.API.Controllers
         )
         {
             _repositoryWrapper = repositoryWrapper;
+        }
+
+        //predict sales
+        [HttpGet("predict")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetPredictSales()
+        {
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+                if (sales != null)
+                {
+                    //PredictionModel.();
+                    // Load model and predict the next set values.
+                    // The number of values predicted is equal to the horizon specified while training.
+                    //var result = PredictionModel.Predict(sales);                   
+                    return Ok();
+                }
+                else
+                {
+                    return Ok(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+            }
         }
 
         [HttpGet("")]
