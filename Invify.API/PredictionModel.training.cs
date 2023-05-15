@@ -6,44 +6,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ML;
-using System.Data.SqlClient;
-using Microsoft.ML.Data;
 
-namespace Invify_API
+namespace Invify_Application
 {
     public partial class PredictionModel
     {
-        public const string RetrainConnectionString = @"Data Source=invify.database.windows.net;Initial Catalog=Invify;Persist Security Info=True;User ID=invify_admin";
-        public const string RetrainCommandString = @"SELECT CAST([Id] as REAL), CAST([ProductId] as REAL), CAST([Quantity] as REAL), CAST([Price] as REAL), [SaleDate], [DateTimeCreated], [DateTimeUpdated], [DateTimeDeleted] FROM [dbo].[Sale]";
+        public const string RetrainFilePath =  @"C:\Users\kelvin\OneDrive - Singapore Institute Of Technology\TLM3001-Design Project\SalesTrainingData.csv";
+        public const char RetrainSeparatorChar = ',';
+        public const bool RetrainHasHeader =  true;
 
-        /// <summary>
+         /// <summary>
         /// Train a new model with the provided dataset.
         /// </summary>
         /// <param name="outputModelPath">File path for saving the model. Should be similar to "C:\YourPath\ModelName.mlnet"</param>
-        /// <param name="connectionString">Connection string for databases on-premises or in the cloud.</param>
-        /// <param name="commandText">Command string for selecting training data.</param>
-        public static void Train(string outputModelPath, string connectionString = RetrainConnectionString, string commandText = RetrainCommandString)
+        /// <param name="inputDataFilePath">Path to the data file for training.</param>
+        /// <param name="separatorChar">Separator character for delimited training file.</param>
+        /// <param name="hasHeader">Boolean if training file has a header.</param>
+        public static void Train(string outputModelPath, string inputDataFilePath = RetrainFilePath, char separatorChar = RetrainSeparatorChar, bool hasHeader = RetrainHasHeader)
         {
             var mlContext = new MLContext();
 
-            var data = LoadIDataViewFromDatabase(mlContext, connectionString, commandText);
+            var data = LoadIDataViewFromFile(mlContext, inputDataFilePath, separatorChar, hasHeader);
             var model = RetrainModel(mlContext, data);
             SaveModel(mlContext, model, data, outputModelPath);
         }
 
         /// <summary>
-        /// Load an IDataView from a database source.For more information on how to load data, see aka.ms/loaddata.
+        /// Load an IDataView from a file path.
         /// </summary>
         /// <param name="mlContext">The common context for all ML.NET operations.</param>
-        /// <param name="connectionString">Connection string for databases on-premises or in the cloud.</param>
-        /// <param name="commandText">Command string for selecting training data.</param>
+        /// <param name="inputDataFilePath">Path to the data file for training.</param>
+        /// <param name="separatorChar">Separator character for delimited training file.</param>
+        /// <param name="hasHeader">Boolean if training file has a header.</param>
         /// <returns>IDataView with loaded training data.</returns>
-        public static IDataView LoadIDataViewFromDatabase(MLContext mlContext, string connectionString, string commandText)
+        public static IDataView LoadIDataViewFromFile(MLContext mlContext, string inputDataFilePath, char separatorChar, bool hasHeader)
         {
-            DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<ModelInput>();
-            DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance, connectionString, commandText);
-
-            return loader.Load(dbSource);
+            return mlContext.Data.LoadFromTextFile<ModelInput>(inputDataFilePath, separatorChar, hasHeader);
         }
 
 
@@ -90,7 +88,7 @@ namespace Invify_API
         public static IEstimator<ITransformer> BuildPipeline(MLContext mlContext)
         {
             // Data process configuration with pipeline data transformations
-            var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize:3,seriesLength:5,trainSize:44,horizon:10,outputColumnName:@"Quantity",inputColumnName:@"Quantity",confidenceLowerBoundColumn:@"Quantity_LB",confidenceUpperBoundColumn:@"Quantity_UB");
+            var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize:2,seriesLength:10,trainSize:9,horizon:12,outputColumnName:@"TotalSales",inputColumnName:@"TotalSales",confidenceLowerBoundColumn:@"TotalSales_LB",confidenceUpperBoundColumn:@"TotalSales_UB");
 
             return pipeline;
         }

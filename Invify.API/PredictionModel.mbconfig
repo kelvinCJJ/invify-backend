@@ -1,11 +1,23 @@
 ﻿{
   "Scenario": "Forecasting",
   "DataSource": {
-    "Type": "SQL",
+    "Type": "TabularFile",
     "Version": 1,
+    "FilePath": "C:\\Users\\kelvin\\OneDrive - Singapore Institute Of Technology\\TLM3001-Design Project\\SalesTrainingData.csv",
+    "Delimiter": ",",
+    "DecimalMarker": ".",
+    "HasHeader": true,
     "ColumnProperties": [
       {
-        "ColumnName": "Id",
+        "ColumnName": "SalesYear",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "SalesMonth",
         "ColumnPurpose": "Feature",
         "ColumnDataFormat": "Single",
         "IsCategorical": false,
@@ -13,67 +25,14 @@
         "Version": 4
       },
       {
-        "ColumnName": "ProductId",
+        "ColumnName": "TotalSales",
         "ColumnPurpose": "Feature",
         "ColumnDataFormat": "Single",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "Quantity",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "Single",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "Price",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "Single",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "SaleDate",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "DateTime",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "DateTimeCreated",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "DateTime",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "DateTimeUpdated",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "DateTime",
-        "IsCategorical": false,
-        "Type": "Column",
-        "Version": 4
-      },
-      {
-        "ColumnName": "DateTimeDeleted",
-        "ColumnPurpose": "Feature",
-        "ColumnDataFormat": "DateTime",
         "IsCategorical": false,
         "Type": "Column",
         "Version": 4
       }
-    ],
-    "ConnectionString": "Data Source=invify.database.windows.net;Initial Catalog=Invify;Persist Security Info=True;User ID=invify_admin",
-    "CommandString": "SELECT CAST([Id] as REAL), CAST([ProductId] as REAL), CAST([Quantity] as REAL), CAST([Price] as REAL), [SaleDate], [DateTimeCreated], [DateTimeUpdated], [DateTimeDeleted] FROM [dbo].[Sale]",
-    "DatabaseName": "Invify",
-    "SelectedTableDbo": "dbo",
-    "TableName": "Sale"
+    ]
   },
   "Environment": {
     "Type": "LocalCPU",
@@ -87,19 +46,19 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "ForecastBySsa",
-        "Score": 78.807033571403181,
-        "RuntimeInSeconds": 0.002,
+        "Score": 248.12228870391846,
+        "RuntimeInSeconds": 0.176,
         "Parameter": {
           "_SCHEMA_": "e0",
           "e0": {
-            "WindowSize": 3,
-            "SeriesLength": 5,
-            "TrainSize": 44,
-            "Horizon": 10,
-            "OutputColumnName": "Quantity",
-            "InputColumnName": "Quantity",
-            "ConfidenceLowerBoundColumn": "Quantity_LB",
-            "ConfidenceUpperBoundColumn": "Quantity_UB"
+            "WindowSize": 2,
+            "SeriesLength": 10,
+            "TrainSize": 9,
+            "Horizon": 12,
+            "OutputColumnName": "TotalSales",
+            "InputColumnName": "TotalSales",
+            "ConfidenceLowerBoundColumn": "TotalSales_LB",
+            "ConfidenceUpperBoundColumn": "TotalSales_UB"
           }
         }
       },
@@ -107,19 +66,19 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "ForecastBySsa",
-        "Score": 78.807033571403181,
-        "RuntimeInSeconds": 0.004,
+        "Score": 248.12228870391846,
+        "RuntimeInSeconds": 0.002,
         "Parameter": {
           "_SCHEMA_": "e0",
           "e0": {
-            "WindowSize": 3,
-            "SeriesLength": 20,
-            "TrainSize": 44,
-            "Horizon": 10,
-            "OutputColumnName": "Quantity",
-            "InputColumnName": "Quantity",
-            "ConfidenceLowerBoundColumn": "Quantity_LB",
-            "ConfidenceUpperBoundColumn": "Quantity_UB"
+            "WindowSize": 2,
+            "SeriesLength": 4136,
+            "TrainSize": 9,
+            "Horizon": 12,
+            "OutputColumnName": "TotalSales",
+            "InputColumnName": "TotalSales",
+            "ConfidenceLowerBoundColumn": "TotalSales_LB",
+            "ConfidenceUpperBoundColumn": "TotalSales_UB"
           }
         }
       },
@@ -127,19 +86,19 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "ForecastBySsa",
-        "Score": 78.807033571403181,
+        "Score": 248.12228870391846,
         "RuntimeInSeconds": 0.002,
         "Parameter": {
           "_SCHEMA_": "e0",
           "e0": {
-            "WindowSize": 3,
-            "SeriesLength": 16,
-            "TrainSize": 44,
-            "Horizon": 10,
-            "OutputColumnName": "Quantity",
-            "InputColumnName": "Quantity",
-            "ConfidenceLowerBoundColumn": "Quantity_LB",
-            "ConfidenceUpperBoundColumn": "Quantity_UB"
+            "WindowSize": 2,
+            "SeriesLength": 901,
+            "TrainSize": 9,
+            "Horizon": 12,
+            "OutputColumnName": "TotalSales",
+            "InputColumnName": "TotalSales",
+            "ConfidenceLowerBoundColumn": "TotalSales_LB",
+            "ConfidenceUpperBoundColumn": "TotalSales_UB"
           }
         }
       },
@@ -147,19 +106,19 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "ForecastBySsa",
-        "Score": 78.807033571403181,
+        "Score": 248.12228870391846,
         "RuntimeInSeconds": 0.002,
         "Parameter": {
           "_SCHEMA_": "e0",
           "e0": {
-            "WindowSize": 3,
-            "SeriesLength": 14,
-            "TrainSize": 44,
-            "Horizon": 10,
-            "OutputColumnName": "Quantity",
-            "InputColumnName": "Quantity",
-            "ConfidenceLowerBoundColumn": "Quantity_LB",
-            "ConfidenceUpperBoundColumn": "Quantity_UB"
+            "WindowSize": 2,
+            "SeriesLength": 716,
+            "TrainSize": 9,
+            "Horizon": 12,
+            "OutputColumnName": "TotalSales",
+            "InputColumnName": "TotalSales",
+            "ConfidenceLowerBoundColumn": "TotalSales_LB",
+            "ConfidenceUpperBoundColumn": "TotalSales_UB"
           }
         }
       },
@@ -167,19 +126,19 @@
         "Version": 1,
         "Type": "Trial",
         "TrainerName": "ForecastBySsa",
-        "Score": 78.807033571403181,
-        "RuntimeInSeconds": 0.002,
+        "Score": 248.12228870391846,
+        "RuntimeInSeconds": 0.005,
         "Parameter": {
           "_SCHEMA_": "e0",
           "e0": {
-            "WindowSize": 3,
-            "SeriesLength": 16,
-            "TrainSize": 44,
-            "Horizon": 10,
-            "OutputColumnName": "Quantity",
-            "InputColumnName": "Quantity",
-            "ConfidenceLowerBoundColumn": "Quantity_LB",
-            "ConfidenceUpperBoundColumn": "Quantity_UB"
+            "WindowSize": 2,
+            "SeriesLength": 880,
+            "TrainSize": 9,
+            "Horizon": 12,
+            "OutputColumnName": "TotalSales",
+            "InputColumnName": "TotalSales",
+            "ConfidenceLowerBoundColumn": "TotalSales_LB",
+            "ConfidenceUpperBoundColumn": "TotalSales_UB"
           }
         }
       }
@@ -188,7 +147,7 @@
       "e0": "ForecastBySsa"
     },
     "Schema": "e0",
-    "MetricName": "RMSE",
+    "MetricName": "MAE",
     "ModelFilePath": "C:\\Users\\kelvin\\source\\repos\\kelvinCJJ\\invify-backend\\Invify.API\\PredictionModel.mlnet"
   },
   "Type": "TrainingConfig",
@@ -196,12 +155,12 @@
   "TrainingOption": {
     "Version": 2,
     "Type": "ForecastingTrainingOption",
-    "TrainingTime": 60,
+    "TrainingTime": 20,
     "UseCrossValidation": false,
-    "OptimizeMetric": "RMSE",
-    "Horizon": 10,
-    "TimeColumn": "SaleDate",
-    "LabelColumn": "Quantity",
+    "OptimizeMetric": "MAE",
+    "Horizon": 12,
+    "TimeColumn": "SalesYear",
+    "LabelColumn": "TotalSales",
     "UseDefaultIndex": false,
     "ValidationOption": {
       "Version": 0,

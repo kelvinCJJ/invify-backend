@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="PredictionModel.training.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.14" />
@@ -28,8 +31,11 @@
     <ProjectReference Include="..\Invify.Infrastructure\Invify.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup Label="PredictionModel">
-    <None Include="PredictionModel.mlnet">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="PredictionModel.training.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="PredictionModel.mlnet">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>

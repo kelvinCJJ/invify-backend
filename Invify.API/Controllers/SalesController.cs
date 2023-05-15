@@ -1,9 +1,13 @@
 ﻿using Invify.Domain.Entities;
 using Invify.Dtos;
 using Invify.Interfaces;
-using Invify_API;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ML.Data;
+using Microsoft.ML.Trainers;
+using Microsoft.ML;
+using Invify.MLModel;
+using Invify_Application;
 
 namespace Invify.API.Controllers
 {
@@ -31,13 +35,33 @@ namespace Invify.API.Controllers
             try
             {
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
+               SalePrediction[] salesByMonth = sales.GroupBy(x => x.DateTimeCreated.Value).Select(x => new SalePrediction(x.Key, x.Sum(y => y.Quantity))).ToArray();
                 if (sales != null)
                 {
-                    //PredictionModel.();
+                    //// Create MLContext
+                    //MLContext mlContext = new MLContext();
+                    
+
+
+                    //// Load Data
+                    //IDataView data = mlContext.Data.LoadFromEnumerable<SalePrediction>(salesByMonth);
+
+                    //// Define data preparation estimator
+                    //EstimatorChain<RegressionPredictionTransformer<LinearRegressionModelParameters>> pipelineEstimator =
+                    //    mlContext.Transforms.Concatenate("Features", new string[] { "Size", "HistoricalPrices" })
+                    //        .Append(mlContext.Transforms.NormalizeMinMax("Features"))
+                    //        .Append(mlContext.Regression.Trainers.Sdca());
+
+                    //// Train model
+                    //ITransformer trainedModel = pipelineEstimator.Fit(data);
+
+                    //// Save model
+                    //mlContext.Model.Save(trainedModel, data.Schema, "model.zip");
+
                     // Load model and predict the next set values.
                     // The number of values predicted is equal to the horizon specified while training.
-                    //var result = PredictionModel.Predict(sales);                   
-                    return Ok();
+                    var result = PredictionModel.Predict();
+                    return Ok(salesByMonth);
                 }
                 else
                 {

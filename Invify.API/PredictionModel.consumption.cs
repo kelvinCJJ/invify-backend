@@ -8,7 +8,7 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Transforms.TimeSeries;
 
-namespace Invify_API
+namespace Invify_Application
 {
     public partial class PredictionModel
     {
@@ -19,8 +19,8 @@ namespace Invify_API
         public class ModelInput
         {
             [LoadColumn(2)]
-            [ColumnName(@"Quantity")]
-            public float Quantity { get; set; }
+            [ColumnName(@"TotalSales")]
+            public float TotalSales { get; set; }
 
         }
 
@@ -32,14 +32,14 @@ namespace Invify_API
         #region model output class
         public class ModelOutput
         {
-            [ColumnName(@"Quantity")]
-            public float[] Quantity { get; set; }
+            [ColumnName(@"TotalSales")]
+            public float[] TotalSales { get; set; }
 
-            [ColumnName(@"Quantity_LB")]
-            public float[] Quantity_LB { get; set; }
+            [ColumnName(@"TotalSales_LB")]
+            public float[] TotalSales_LB { get; set; }
 
-            [ColumnName(@"Quantity_UB")]
-            public float[] Quantity_UB { get; set; }
+            [ColumnName(@"TotalSales_UB")]
+            public float[] TotalSales_UB { get; set; }
 
         }
 
