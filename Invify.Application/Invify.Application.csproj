@@ -14,9 +14,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Invify.Domain\Invify.Domain.csproj" />
   </ItemGroup>
-  <ItemGroup Label="PredictionModel">
-    <None Include="PredictionModel.mlnet">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

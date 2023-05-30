@@ -48,7 +48,6 @@ namespace Invify.API.Controllers
                 var product = await _repositoryWrapper.Product.FindByConditionAsync(x => x.Id == stock.ProductId);
                 if (product == null)
                 {
-                    //await _repositoryWrapper.Product.CreateAsync(new Product { Id = stock.ProductId, Name = stock.ProductName, Quantity = stock.Quantity });
                     return NotFound(new Response { Success = false, Message = "Product not found" });
                 }
                 var stockTakes = await _repositoryWrapper.StockTake.CreateAsync(stock);

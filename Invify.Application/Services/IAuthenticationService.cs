@@ -12,6 +12,7 @@ namespace Invify.Services
     {
         Task<Response> LoginAsync(AuthenticationRequest authenticationRequest);
         Task<Response> RegisterAsync(RegisterRequest registerRequest, string role);
+        Task<bool> IsLoggedInAsync(string userId);
         Task<Response> LogoutAsync();
 
     }

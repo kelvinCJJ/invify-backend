@@ -67,6 +67,21 @@ namespace Invify.API.Controllers
             }
         }
 
+        [HttpPost("checkauth")]
+        public async Task<bool> CheckAuth(string userId)
+        {
+            try
+            {
+                var response = await _authenticationService.IsLoggedInAsync(userId);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
         //logout
         [HttpGet("logout")]
         public async Task<IActionResult> Logout()

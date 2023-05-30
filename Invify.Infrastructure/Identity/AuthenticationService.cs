@@ -90,6 +90,22 @@ namespace Invify.Identity
 
         }
 
+        //Check if user is logged in
+        public async Task<bool> IsLoggedInAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+            var result = await _signInManager.CanSignInAsync(user);
+            if (!result)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<Response> LogoutAsync()
         {
             await _signInManager.SignOutAsync();

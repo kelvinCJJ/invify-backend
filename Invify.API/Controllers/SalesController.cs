@@ -7,7 +7,6 @@ using Microsoft.ML.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML;
 using Invify.MLModel;
-using Invify_Application;
 
 namespace Invify.API.Controllers
 {
@@ -60,7 +59,7 @@ namespace Invify.API.Controllers
 
                     // Load model and predict the next set values.
                     // The number of values predicted is equal to the horizon specified while training.
-                    var result = PredictionModel.Predict();
+                    //var result = PredictionModel.Predict();
                     return Ok(salesByMonth);
                 }
                 else
