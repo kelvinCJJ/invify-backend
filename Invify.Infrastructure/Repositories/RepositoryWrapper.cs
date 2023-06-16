@@ -12,7 +12,7 @@ namespace Invify.Infrastructure.Repositories
     {
         private ApplicationDbContext _context;
         private ICategoryRepository _category;
-        private IInventoryRepository _inventory;
+        //private IInventoryRepository _inventory;
         private IProductRepository _product;
         private IPurchaseRepository _purchase;
         private ISaleRepository _sale;
@@ -32,18 +32,18 @@ namespace Invify.Infrastructure.Repositories
             }
         }
 
-        public IInventoryRepository Inventory
-        {
-            get
-            {
-                if (_inventory == null)
-                {
-                    _inventory = new InventoryRepository(_context);
-                }
+        //public IInventoryRepository Inventory
+        //{
+        //    get
+        //    {
+        //        if (_inventory == null)
+        //        {
+        //            _inventory = new InventoryRepository(_context);
+        //        }
 
-                return _inventory;
-            }
-        }
+        //        return _inventory;
+        //    }
+        //}
 
         public IProductRepository Product
         {

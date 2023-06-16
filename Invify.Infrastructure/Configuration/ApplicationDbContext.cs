@@ -18,7 +18,6 @@ namespace Invify.Infrastructure.Configuration
 
         }
         public DbSet<Category>? Categories { get; set; }
-        public DbSet<Inventory>? Inventories { get; set; }
         public DbSet<Product>? Products { get; set; }
         public DbSet<Purchase>? Purchases { get; set; }
         public DbSet<Sale>? Sales { get; set; }
@@ -37,7 +36,6 @@ namespace Invify.Infrastructure.Configuration
             builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
             builder.Entity<Category>().ToTable("Category");
-            builder.Entity<Inventory>().ToTable("Inventory");
             builder.Entity<Product>().ToTable("Product");
             builder.Entity<Purchase>().ToTable("Purchase");
             builder.Entity<Sale>().ToTable("Sale");

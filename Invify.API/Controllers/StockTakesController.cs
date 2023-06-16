@@ -41,7 +41,7 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStockTakesAsync(StockTake stock)
+        public async Task<IActionResult> CreateStockTakesAsync(StockTake stock)
         {
             try
             {

@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+﻿using Invify.Domain.Entities;
+using Invify.Dtos;
+using Invify.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Invify.API.Controllers
 {
@@ -8,36 +9,139 @@ namespace Invify.API.Controllers
     [ApiController]
     public class SuppliersController : ControllerBase
     {
-        // GET: api/<SupplierController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private IRepositoryWrapper _repositoryWrapper;
+
+        //get all suppliers
+        //get all suppliers
+        //get suppliers by name
+
+        public SuppliersController(
+            IRepositoryWrapper repositoryWrapper
+        )
         {
-            return new string[] { "value1", "value2" };
+            _repositoryWrapper = repositoryWrapper;
         }
 
-        // GET api/<SupplierController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        //get all suppliers
+        [HttpGet("")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllSuppliersAsync()
         {
-            return "value";
+            try
+            {
+                var suppliers = await _repositoryWrapper.Supplier.FindAllAsync();
+                return Ok(suppliers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+            }
         }
 
-        // POST api/<SupplierController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        //get suppliers by name
+        [HttpGet("{name}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSupplierByName(string name)
         {
+            try
+            {
+                var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Name == name);
+                if (supplier != null)
+                {
+                    return Ok(supplier.First());
+
+                }
+                return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
         }
 
-        // PUT api/<SupplierController>/5
+        //create supplier
+        [HttpPost("")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateSupplier([FromBody] Supplier supplier)
+        {
+            try
+            {
+                if (supplier == null)
+                {
+                    return BadRequest(new Response { Success = false, Message = "supplier object is null" });
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new Response { Success = false, Message = "Invalid supplier object" });
+                }
+                await _repositoryWrapper.Supplier.UpdateAsync(supplier);
+                await _repositoryWrapper.SaveAsync();
+                return CreatedAtRoute("SupplierById", new { id = supplier.Id }, supplier);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
+        //update supplier
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateSupplier(int id, [FromBody] Supplier supplier)
         {
+            try
+            {
+                if (supplier == null)
+                {
+                    return BadRequest(new Response { Success = false, Message = "supplier object is null" });
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new Response { Success = false, Message = "Invalid supplier object" });
+                }
+                var dbSupplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
+                if (dbSupplier == null)
+                {
+                    return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+                }
+                await _repositoryWrapper.Supplier.UpdateAsync(supplier);
+                await _repositoryWrapper.SaveAsync();
+                return Ok(new Response { Success = true, Message = "supplier updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
         }
 
-        // DELETE api/<SupplierController>/5
+        //delete supplier
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteSupplier(int id)
         {
+            try
+            {
+                var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
+                if (supplier == null)
+                {
+                    return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+                }
+                await _repositoryWrapper.Supplier.DeleteAsync(supplier.First());
+                await _repositoryWrapper.SaveAsync();
+                return Ok(new Response { Success = true, Message = "supplier ["+supplier.First().Name+"] deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
         }
+
+
     }
 }

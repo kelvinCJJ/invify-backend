@@ -68,7 +68,7 @@ namespace Invify.API.Controllers
         }
 
         [HttpPost("checkauth")]
-        public async Task<bool> CheckAuth(string userId)
+        public async Task<bool> CheckAuth([FromBody] string userId)
         {
             try
             {

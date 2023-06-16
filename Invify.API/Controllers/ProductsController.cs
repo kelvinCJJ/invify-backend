@@ -1,4 +1,5 @@
-﻿using Invify.Domain.Entities;
+﻿using Invify.Application.Dtos.Product;
+using Invify.Domain.Entities;
 using Invify.Dtos;
 using Invify.Dtos.Product;
 using Invify.Interfaces;
@@ -30,24 +31,6 @@ namespace Invify.API.Controllers
             try
             {
                 var products = await _repositoryWrapper.Product.FindAllAsync();
-                //var products2 = await _repositoryWrapper.Product.find();
-                //var productsDTO = new List<ProductDTO>();
-
-                //products.ForEach(product =>
-                //{
-                //    productsDTO.Add(
-                //        new ProductDTO
-                //        {
-                //            Id = product.Id,
-                //            Name = product.Name,
-                //            SKU = product.SKU,
-                //            Description = product.Description,
-                //            Cost = product.Cost,
-                //            Price = product.Price,
-                //        }
-                //        );
-
-                //});
                 return Ok(products);
             }
             catch (Exception ex)
@@ -77,6 +60,28 @@ namespace Invify.API.Controllers
             }
         }
 
+        //get product by sku
+        [HttpGet("sku/{sku}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProductIdandNameBySKU(string sku)
+        {
+            try
+            {
+                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.SKU == sku);
+                if (product != null && product.Count>0)
+                {
+                    return Ok(new { product.First().Id, product.First().Name });
+
+                }
+                return Ok(new Response { Success = false, Message = "product does not exist" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -89,7 +94,7 @@ namespace Invify.API.Controllers
                 if (isDuplicate)
                 {
                     // handle duplicate case
-                    return BadRequest(new Response { Success = false, Message = "Product Name/SKU already exists" });
+                    return Ok(new Response { Success = false, Message = "Product Name/SKU already exists" });
                 }
                 // proceed with create/update operation
                 product.DateTimeCreated = DateTime.UtcNow.AddHours(8);
@@ -103,28 +108,49 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut()]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProductAsync([FromBody] Product product, int id)
+        public async Task<IActionResult> UpdateProductAsync([FromBody] Product product)
         {
             product.DateTimeUpdated= DateTime.UtcNow.AddHours(8);
             await _repositoryWrapper.Product.UpdateAsync(product);
             return Ok();
         }
 
-        [HttpDelete("{id}")]
+        //update product stock take
+        [HttpPut("stocktake")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateProductStockTakeAsync([FromBody] ProductStockTakeDto productStockTakeDto)
+        {
+            var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == productStockTakeDto.ProductId);
+            if (product != null && product.Count > 0)
+            {
+                product.First().Quantity += productStockTakeDto.StockTakeQuantity!=null ? productStockTakeDto.StockTakeQuantity.Value : 0;
+                product.First().DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+
+                //stock take record
+                var stockTake = new StockTake
+                {                    
+                    ProductId = productStockTakeDto.ProductId,
+                    TakenQuantity = productStockTakeDto.StockTakeQuantity != null ? productStockTakeDto.StockTakeQuantity.Value : 0,
+                    DateTimeCreated = DateTime.UtcNow.AddHours(8)
+                };
+
+                await _repositoryWrapper.Product.UpdateAsync(product.First());
+                return Ok();
+            }
+            return BadRequest(new Response { Success = false, Message = "product does not exist" });
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
             
             var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == id);
-            var inv = await _repositoryWrapper.Inventory.FindByConditionAsync(c => c.ProductId==id);
-            if (inv.Count != 0)
-            {
-                await _repositoryWrapper.Inventory.DeleteAsync(inv.First());
-            }
             await _repositoryWrapper.Product.DeleteAsync(product.First());
             return Ok();
         }
