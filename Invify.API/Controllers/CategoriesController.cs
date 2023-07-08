@@ -42,22 +42,6 @@ namespace Invify.API.Controllers
             }
         }
 
-        //[HttpGet("{name}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public async Task<IActionResult> GetCategoryByName(string name)
-        //{
-        //    var category = await _repositoryWrapper.Category.GetCategoryByNameAsync(name);
-        //    if (category == null)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    else
-        //    {
-        //        return Ok(category);
-        //    }
-        //}
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

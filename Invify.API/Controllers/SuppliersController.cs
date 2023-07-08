@@ -11,10 +11,6 @@ namespace Invify.API.Controllers
     {
         private IRepositoryWrapper _repositoryWrapper;
 
-        //get all suppliers
-        //get all suppliers
-        //get suppliers by name
-
         public SuppliersController(
             IRepositoryWrapper repositoryWrapper
         )
@@ -40,15 +36,15 @@ namespace Invify.API.Controllers
             }
         }
 
-        //get suppliers by name
-        [HttpGet("{name}")]
+        //get supplier by id
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSupplierByName(string name)
+        public async Task<IActionResult> GetSupplierById(int id)
         {
             try
             {
-                var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Name == name);
+                var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
                 if (supplier != null)
                 {
                     return Ok(supplier.First());
@@ -58,33 +54,49 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
+        ////get suppliers by name
+        //[HttpGet("{name}")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        //public async Task<IActionResult> GetSupplierByName(string name)
+        //{
+        //    try
+        //    {
+        //        var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Name == name);
+        //        if (supplier != null)
+        //        {
+        //            return Ok(supplier.First());
+
+        //        }
+        //        return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+        //    }
+        //}
+
         //create supplier
         [HttpPost("")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateSupplier([FromBody] Supplier supplier)
+        public async Task<IActionResult> CreateSupplierAsync(Supplier supplier)
         {
             try
             {
-                if (supplier == null)
-                {
-                    return BadRequest(new Response { Success = false, Message = "supplier object is null" });
-                }
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new Response { Success = false, Message = "Invalid supplier object" });
-                }
-                await _repositoryWrapper.Supplier.UpdateAsync(supplier);
-                await _repositoryWrapper.SaveAsync();
-                return CreatedAtRoute("SupplierById", new { id = supplier.Id }, supplier);
+                // proceed with create/update operation
+                supplier.DateTimeCreated = DateTime.UtcNow.AddHours(8);
+                var res = await _repositoryWrapper.Supplier.CreateAsync(supplier);
+                return Ok(res);
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
@@ -95,23 +107,22 @@ namespace Invify.API.Controllers
         public async Task<IActionResult> UpdateSupplier(int id, [FromBody] Supplier supplier)
         {
             try
-            {
-                if (supplier == null)
-                {
-                    return BadRequest(new Response { Success = false, Message = "supplier object is null" });
-                }
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(new Response { Success = false, Message = "Invalid supplier object" });
-                }
+            {         
+                
                 var dbSupplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
                 if (dbSupplier == null)
                 {
                     return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
                 }
-                await _repositoryWrapper.Supplier.UpdateAsync(supplier);
+                var supplierToUpdate = dbSupplier.First();
+                supplierToUpdate.Name = supplier.Name;
+                supplierToUpdate.ContactName = supplier.ContactName;
+                supplierToUpdate.Phone = supplier.Phone;
+                supplierToUpdate.Email = supplier.Email;
+                supplierToUpdate.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                await _repositoryWrapper.Supplier.UpdateAsync(supplierToUpdate);
                 await _repositoryWrapper.SaveAsync();
-                return Ok(new Response { Success = true, Message = "supplier updated successfully" });
+                return Ok();
             }
             catch (Exception ex)
             {

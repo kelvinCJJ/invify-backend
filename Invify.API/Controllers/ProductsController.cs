@@ -13,7 +13,6 @@ namespace Invify.API.Controllers
     public class ProductsController : ControllerBase
     {
         private IRepositoryWrapper _repositoryWrapper;
-        //generate methods for CRUD
 
         public ProductsController(
             IRepositoryWrapper repositoryWrapper
@@ -45,7 +44,7 @@ namespace Invify.API.Controllers
         public async Task<IActionResult> GetProductById(int id)
         {
             try
-            {
+           {
                 var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == id);
                 if (product != null)
                 {
