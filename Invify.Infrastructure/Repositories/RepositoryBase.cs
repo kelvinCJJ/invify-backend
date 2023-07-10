@@ -46,7 +46,6 @@ namespace Invify.Infrastructure.Repositories
             {
                 _context.Attach(entity);
                 _context.Entry(entity).State = EntityState.Modified;
-                //_context.Set<T>().Update(entity);
                 await _context.SaveChangesAsync();
 
                 return new Response { Success = true, Message = entity.GetType().Name + " updated successfully" };

@@ -41,17 +41,21 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateStockTakesAsync(StockTake stock)
+        public async Task<IActionResult> CreateStockTakesAsync(List<StockTake> stockList)
         {
             try
             {
-                var product = await _repositoryWrapper.Product.FindByConditionAsync(x => x.Id == stock.ProductId);
-                if (product == null)
+                foreach (var stock in stockList)
                 {
-                    return NotFound(new Response { Success = false, Message = "Product not found" });
+                    var product = await _repositoryWrapper.Product.FindByConditionAsync(x => x.Id == stock.ProductId);
+                    if (product == null)
+                    {
+                        return NotFound(new Response { Success = false, Message = "Product not found" });
+                    }
+                    var stockTakes = await _repositoryWrapper.StockTake.CreateAsync(stock);
                 }
-                var stockTakes = await _repositoryWrapper.StockTake.CreateAsync(stock);
-                return Ok(stockTakes);
+                return Ok(stockList);
+            
             }
             catch (Exception ex)
             {

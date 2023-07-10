@@ -21,25 +21,72 @@ namespace Invify.API.Controllers
 
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         public async Task<IActionResult> GetAllPurchasesAsync()
         {
             try
             {
                 var purchases = await _repositoryWrapper.Purchase.FindAllAsync();
-                return Ok(purchases);
+                var purchasesList = purchases
+                .Select(p => new
+                {
+                    p.ProductId,
+                    ProductName = p.Product.Name,
+                    p.Quantity,
+                    p.Price,
+                    p.PurchaseDate,
+                    p.SupplierId,
+                    p.Id,
+                    p.DateTimeCreated,
+                    p.DateTimeUpdated,
+                    p.DateTimeDeleted
+                });
+                return Ok(purchasesList);
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
+            }
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPurchaseByIdAsync(int id)
+        {
+            try
+            {
+                var purchase = await _repositoryWrapper.Purchase.FindByConditionAsync(x => x.Id == id);
+                if (purchase == null)
+                {
+                    return NotFound(new Response { Success = false, Message = "Purchase not found" });
+                }
+                var purchaseList = purchase
+                .Select(p => new
+                {
+                    p.ProductId,
+                    p.Quantity,
+                    p.Price,
+                    p.PurchaseDate,
+                    p.SupplierId,
+                    p.Id,
+                    p.DateTimeCreated,
+                    p.DateTimeUpdated,
+                    p.DateTimeDeleted
+                });
+                return Ok(purchaseList.First());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         public async Task<IActionResult> CreatePurchaseAsync(Purchase purchase)
         {
             try
@@ -56,15 +103,15 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdatePurchaseAsync(int id, Purchase purchase)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+        public async Task<IActionResult> UpdatePurchaseAsync([FromBody] Purchase purchase, int id)
         {
             try
             {
@@ -78,14 +125,14 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
         public async Task<IActionResult> DeletePurchaseAsync(int id)
         {
             try
@@ -100,7 +147,7 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 

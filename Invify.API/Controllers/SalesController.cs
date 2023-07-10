@@ -82,7 +82,17 @@ namespace Invify.API.Controllers
             try
             {
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
-                return Ok(sales);
+                var salesList = sales.Select(s => new
+                {
+                    s.Id,
+                    s.ProductId,
+                    ProductName = s.Product?.Name,
+                    s.Quantity,
+                    s.Price,
+                    s.SaleDate
+                });
+
+                return Ok(salesList);
             }
             catch (Exception ex)
             {

@@ -24,7 +24,7 @@ namespace Invify.API.Controllers
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllProductsAsync()
         {
             try
@@ -34,13 +34,13 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetProductById(int id)
         {
             try
@@ -59,10 +59,32 @@ namespace Invify.API.Controllers
             }
         }
 
+        //get product id and names
+        [HttpGet("idandname")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProductIdandName()
+        {
+            try
+            {
+                var product = await _repositoryWrapper.Product.FindAllAsync();
+                if (product != null)
+                {
+                    return Ok(product.Select(x => new { x.Id, x.Name }));
+
+                }
+                return BadRequest(new Response { Success = false, Message = "product does not exist" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
         //get product by sku
         [HttpGet("sku/{sku}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetProductIdandNameBySKU(string sku)
         {
             try
@@ -83,7 +105,7 @@ namespace Invify.API.Controllers
 
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateProduct(Product product)
         {
             try
@@ -103,14 +125,14 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while creating, please try again later" });
+                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Error while creating, please try again later" });
             }
         }
 
-        [HttpPut()]
+        [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProductAsync([FromBody] Product product)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateProductAsync([FromBody] Product product, int id)
         {
             product.DateTimeUpdated= DateTime.UtcNow.AddHours(8);
             await _repositoryWrapper.Product.UpdateAsync(product);
@@ -120,27 +142,41 @@ namespace Invify.API.Controllers
         //update product stock take
         [HttpPut("stocktake")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateProductStockTakeAsync([FromBody] ProductStockTakeDto productStockTakeDto)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateProductStockTakeAsync([FromBody] List<ProductStockTakeDto> productStockTakeDtos)
         {
-            var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == productStockTakeDto.ProductId);
-            if (product != null && product.Count > 0)
+            try
             {
-                product.First().Quantity += productStockTakeDto.StockTakeQuantity!=null ? productStockTakeDto.StockTakeQuantity.Value : 0;
-                product.First().DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                foreach (var productStockTakeDto in productStockTakeDtos)
+                {
+                    var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == productStockTakeDto.ProductId);
+                    if (product != null && product.Count > 0)
+                    {
+                        product.First().Quantity += productStockTakeDto.StockTakeQuantity != null ? productStockTakeDto.StockTakeQuantity.Value : 0;
+                        product.First().DateTimeUpdated = DateTime.UtcNow.AddHours(8);
 
-                //stock take record
-                var stockTake = new StockTake
-                {                    
-                    ProductId = productStockTakeDto.ProductId,
-                    TakenQuantity = productStockTakeDto.StockTakeQuantity != null ? productStockTakeDto.StockTakeQuantity.Value : 0,
-                    DateTimeCreated = DateTime.UtcNow.AddHours(8)
-                };
+                        //stock take record
+                        var stockTake = new StockTake
+                        {
+                            ProductId = productStockTakeDto.ProductId,
+                            TakenQuantity = productStockTakeDto.StockTakeQuantity != null ? productStockTakeDto.StockTakeQuantity.Value : 0,
+                            DateTimeCreated = DateTime.UtcNow.AddHours(8)
+                        };
 
-                await _repositoryWrapper.Product.UpdateAsync(product.First());
+                        await _repositoryWrapper.Product.UpdateAsync(product.First());
+                        await _repositoryWrapper.StockTake.CreateAsync(stockTake);
+                    }
+                    else
+                    {
+                        return BadRequest(new Response { Success = false, Message = "product does not exist" });
+                    }
+                }
                 return Ok();
             }
-            return BadRequest(new Response { Success = false, Message = "product does not exist" });
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
