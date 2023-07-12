@@ -42,9 +42,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddCors(options =>
     {
         options.AddPolicy("CorsPolicy",
-                   builder => builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader());
+                   builder => builder.WithOrigins("http://localhost:3000", "https://invify-ndi6jlbyz-kelvincjj.vercel.app")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod());
     });
 
 
@@ -129,12 +129,14 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseCors("CorsPolicy");
+
 app.UseRouting();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseCors("CorsPolicy");
 
 app.MapControllers();
 
