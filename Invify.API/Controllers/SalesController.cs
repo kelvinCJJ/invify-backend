@@ -25,54 +25,6 @@ namespace Invify.API.Controllers
             _repositoryWrapper = repositoryWrapper;
         }
 
-        //predict sales
-        [HttpGet("predict")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPredictSales()
-        {
-            try
-            {
-                var sales = await _repositoryWrapper.Sale.FindAllAsync();
-               SalePrediction[] salesByMonth = sales.GroupBy(x => x.DateTimeCreated.Value).Select(x => new SalePrediction(x.Key, x.Sum(y => y.Quantity))).ToArray();
-                if (sales != null)
-                {
-                    //// Create MLContext
-                    //MLContext mlContext = new MLContext();
-                    
-
-
-                    //// Load Data
-                    //IDataView data = mlContext.Data.LoadFromEnumerable<SalePrediction>(salesByMonth);
-
-                    //// Define data preparation estimator
-                    //EstimatorChain<RegressionPredictionTransformer<LinearRegressionModelParameters>> pipelineEstimator =
-                    //    mlContext.Transforms.Concatenate("Features", new string[] { "Size", "HistoricalPrices" })
-                    //        .Append(mlContext.Transforms.NormalizeMinMax("Features"))
-                    //        .Append(mlContext.Regression.Trainers.Sdca());
-
-                    //// Train model
-                    //ITransformer trainedModel = pipelineEstimator.Fit(data);
-
-                    //// Save model
-                    //mlContext.Model.Save(trainedModel, data.Schema, "model.zip");
-
-                    // Load model and predict the next set values.
-                    // The number of values predicted is equal to the horizon specified while training.
-                    //var result = PredictionModel.Predict();
-                    return Ok(salesByMonth);
-                }
-                else
-                {
-                    return Ok(0);
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
-            }
-        }
-
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -175,6 +127,17 @@ namespace Invify.API.Controllers
                 // proceed with create/update operation
                 sale.DateTimeCreated = DateTime.UtcNow.AddHours(8);
                 var sales = await _repositoryWrapper.Sale.CreateAsync(sale);
+
+                //product quantity update
+                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
+                //check if product quantity is enough
+                if (product.First().Quantity < sale.Quantity)
+                {
+                    return BadRequest(new Response { Success = false, Message = "Product quantity is not enough" });
+                }
+                product.First().Quantity -= sale.Quantity;
+                await _repositoryWrapper.Product.UpdateAsync(product.First());
+
                 return Ok(sales);
 
             }
@@ -189,8 +152,23 @@ namespace Invify.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateSalesAsync([FromBody] Sale sale, int id)
         {
+            //get current sale quantity
+            var currentSale = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
+            var currentSaleQuantity = currentSale.First().Quantity;
+
             sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
             await _repositoryWrapper.Sale.UpdateAsync(sale);
+
+            //product quantity update
+            var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
+            //check if product quantity is enough
+            if (product.First().Quantity < currentSaleQuantity - sale.Quantity)
+            {
+                return BadRequest(new Response { Success = false, Message = "Product quantity is not enough" });
+            }
+            product.First().Quantity -= sale.Quantity;
+            await _repositoryWrapper.Product.UpdateAsync(product.First());
+
             return Ok();
         }
 

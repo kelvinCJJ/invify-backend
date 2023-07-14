@@ -1,0 +1,212 @@
+﻿{
+  "Scenario": "Forecasting",
+  "DataSource": {
+    "Type": "SQL",
+    "Version": 1,
+    "ColumnProperties": [
+      {
+        "ColumnName": "Id",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "ProductId",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Quantity",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Price",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "SaleDate",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "DateTime",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "DateTimeCreated",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "DateTime",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "DateTimeUpdated",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "DateTime",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "DateTimeDeleted",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "DateTime",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 4
+      }
+    ],
+    "ConnectionString": "Data Source=invify.database.windows.net;Initial Catalog=Invify;Persist Security Info=True;User ID=invify_admin",
+    "CommandString": "SELECT CAST([Id] as REAL), CAST([ProductId] as REAL), CAST([Quantity] as REAL), CAST([Price] as REAL), [SaleDate], [DateTimeCreated], [DateTimeUpdated], [DateTimeDeleted] FROM [dbo].[Sale]",
+    "DatabaseName": "Invify",
+    "SelectedTableDbo": "dbo",
+    "TableName": "Sale"
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 3,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "ForecastBySsa",
+        "Score": 12.87566659450531,
+        "RuntimeInSeconds": 0.003,
+        "Parameter": {
+          "_SCHEMA_": "e0",
+          "e0": {
+            "WindowSize": 45,
+            "SeriesLength": 70,
+            "TrainSize": 103,
+            "Horizon": 20,
+            "OutputColumnName": "Quantity",
+            "InputColumnName": "Quantity",
+            "ConfidenceLowerBoundColumn": "Quantity_LB",
+            "ConfidenceUpperBoundColumn": "Quantity_UB"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "ForecastBySsa",
+        "Score": 12.87566659450531,
+        "RuntimeInSeconds": 0.003,
+        "Parameter": {
+          "_SCHEMA_": "e0",
+          "e0": {
+            "WindowSize": 45,
+            "SeriesLength": 125,
+            "TrainSize": 103,
+            "Horizon": 20,
+            "OutputColumnName": "Quantity",
+            "InputColumnName": "Quantity",
+            "ConfidenceLowerBoundColumn": "Quantity_LB",
+            "ConfidenceUpperBoundColumn": "Quantity_UB"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "ForecastBySsa",
+        "Score": 12.87566659450531,
+        "RuntimeInSeconds": 0.003,
+        "Parameter": {
+          "_SCHEMA_": "e0",
+          "e0": {
+            "WindowSize": 45,
+            "SeriesLength": 143,
+            "TrainSize": 103,
+            "Horizon": 20,
+            "OutputColumnName": "Quantity",
+            "InputColumnName": "Quantity",
+            "ConfidenceLowerBoundColumn": "Quantity_LB",
+            "ConfidenceUpperBoundColumn": "Quantity_UB"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "ForecastBySsa",
+        "Score": 12.87566659450531,
+        "RuntimeInSeconds": 0.003,
+        "Parameter": {
+          "_SCHEMA_": "e0",
+          "e0": {
+            "WindowSize": 45,
+            "SeriesLength": 105,
+            "TrainSize": 103,
+            "Horizon": 20,
+            "OutputColumnName": "Quantity",
+            "InputColumnName": "Quantity",
+            "ConfidenceLowerBoundColumn": "Quantity_LB",
+            "ConfidenceUpperBoundColumn": "Quantity_UB"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "ForecastBySsa",
+        "Score": 12.87566659450531,
+        "RuntimeInSeconds": 0.002,
+        "Parameter": {
+          "_SCHEMA_": "e0",
+          "e0": {
+            "WindowSize": 45,
+            "SeriesLength": 92,
+            "TrainSize": 103,
+            "Horizon": 20,
+            "OutputColumnName": "Quantity",
+            "InputColumnName": "Quantity",
+            "ConfidenceLowerBoundColumn": "Quantity_LB",
+            "ConfidenceUpperBoundColumn": "Quantity_UB"
+          }
+        }
+      }
+    ],
+    "Estimators": {
+      "e0": "ForecastBySsa"
+    },
+    "Schema": "e0",
+    "MetricName": "MAE",
+    "ModelFilePath": "C:\\Users\\kelvin\\source\\repos\\kelvinCJJ\\invify-backend\\Invify.API\\TrainedModels\\QuantityByProductSalesModel.mlnet"
+  },
+  "Type": "TrainingConfig",
+  "Version": 4,
+  "TrainingOption": {
+    "Version": 2,
+    "Type": "ForecastingTrainingOption",
+    "TrainingTime": 30,
+    "UseCrossValidation": false,
+    "OptimizeMetric": "MAE",
+    "Horizon": 20,
+    "TimeColumn": "SaleDate",
+    "LabelColumn": "Quantity",
+    "UseDefaultIndex": false,
+    "ValidationOption": {
+      "Version": 0,
+      "Type": "TrainValidateSplitValidationOption",
+      "SplitRatio": 0.1
+    }
+  }
+}
