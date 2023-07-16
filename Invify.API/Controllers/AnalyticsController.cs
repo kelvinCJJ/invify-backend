@@ -1,15 +1,18 @@
 ﻿using Invify.API.Helpers;
 using Invify.Dtos;
 using Invify.Dtos.Analytics;
+using Invify.Dtos.Sale;
 using Invify.Interfaces;
 using Invify_API;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.ML;
 using Microsoft.ML.AutoML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.TimeSeries;
 using System.Data;
 using System.Data.SqlClient;
+using Tensorflow;
 using TorchSharp.Modules;
 using static Invify_API.QuantityByProductSalesModel;
 using static Microsoft.ML.DataOperationsCatalog;
@@ -24,7 +27,7 @@ namespace Invify.API.Controllers
         private IRepositoryWrapper _repositoryWrapper;
         private readonly IConfiguration _configuration;
         private ForecastHelper _forecastHelper;
-        //private readonly MLContext mlContext;
+        private readonly MLContext mlContext;
 
         public AnalyticsController(
             IRepositoryWrapper repositoryWrapper,
@@ -34,28 +37,127 @@ namespace Invify.API.Controllers
             _repositoryWrapper = repositoryWrapper;
             _configuration = configuration;
             _forecastHelper = new ForecastHelper();
-            //mlContext = new MLContext();
+            mlContext = new MLContext();
 
         }
 
-        // Get total revenue by time period
-        [HttpGet("totalrevenue")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetTotalRevenueByTimePeriod(DateTime startDate, DateTime endDate)
+        //get total sales by time period
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> GetTotalSalesAndRevenueThisYear()
         {
             try
             {
-                var sales = await _repositoryWrapper.Sale
-                    .FindByConditionAsync(s => s.DateTimeCreated >= startDate && s.DateTimeCreated < endDate);
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+                var totalProducts = await _repositoryWrapper.Product.TotalCountAsync();
 
                 if (sales != null)
                 {
-                    decimal totalRevenue = sales.Sum(s => s.Price);
-                    return Ok(totalRevenue);
+                    //total sales this year
+                    var totalSalesThisYear = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year).Sum(x => x.Quantity);
+
+                    //total sales last month
+                    var totalSalesLastMonth = sales.Where(x => x.SaleDate.Month == DateTime.Now.Month - 1).Sum(x => x.Quantity);
+
+                    //total sales last week
+                    var totalSalesLastWeek = sales.Where(x => x.SaleDate.DayOfYear >= DateTime.Now.DayOfYear - 7).Sum(x => x.Quantity); 
+                    
+                    //total revenue this year
+                    var totalRevenueThisYear = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year).Sum(x => x.Price * x.Quantity);
+
+                    //total revenue last month
+                    var totalRevenueLastMonth = sales.Where(x => x.SaleDate >= DateTime.Now.AddMonths(-1)).Sum(x => x.Price * x.Quantity);
+
+                    //total revenue last week
+                    var totalRevenueLastWeek = sales.Where(x => x.SaleDate > DateTime.Now.AddDays(-7)).Sum(x => x.Price * x.Quantity);
+
+                    return Ok(new { totalRevenueThisYear, totalRevenueLastMonth, totalRevenueLastWeek, totalSalesThisYear, totalSalesLastMonth, totalSalesLastWeek, totalProducts });
                 }
 
-                return BadRequest();
+
+                return Ok(new { totalProduct=totalProducts });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
+        //get products that are lower than restock level
+        [HttpGet("lowstock")]
+        public async Task<IActionResult> GetLowStockProducts()
+        {
+            try
+            {
+                var products = await _repositoryWrapper.Product.FindAllAsync();
+
+                if (products != null)
+                {
+                    var lowStockProducts = products.Where(x => x.Quantity < x.RestockLevel).ToList();
+
+                    return Ok(lowStockProducts);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new Response { Success = false, Message = ex.Message });
+            }
+        }
+
+        //get top 5 products by sales
+        [HttpGet("top5products")]
+        public async Task<IActionResult> GetTop5Products()
+        {
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+                var products = await _repositoryWrapper.Product.FindAllAsync();
+
+                if (sales != null)
+                {
+
+                    //top 5 products by sales this year select product name
+                    var top5ProductsThisYear = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year)
+                        .GroupBy(x => x.ProductId)
+                        .Select(x => new { ProductName = products.Where(p => p.Id == x.Key).FirstOrDefault().Name, Quantity = x.Sum(s => s.Quantity) })
+                        .OrderByDescending(x => x.Quantity)
+                        .Take(5);
+
+
+                    //top 5 products by sales last month
+                    var top5ProductsLastMonth = sales.Where(x => x.SaleDate >= DateTime.Now.AddMonths(-1) && x.SaleDate <= DateTime.Now)
+                        .GroupBy(x => x.ProductId)
+                        .Select(x => new { ProductName = products.Where(p => p.Id == x.Key).FirstOrDefault().Name, Quantity = x.Sum(s => s.Quantity) })
+                        .OrderByDescending(x => x.Quantity)
+                        .Take(5);
+
+                    //top 5 products by sales last week
+                    var top5ProductsLastWeek = sales.Where(x => x.SaleDate >= DateTime.Now.AddDays(-7)  && x.SaleDate <= DateTime.Now)
+                        .GroupBy(x => x.ProductId)
+                        .Select(x => new { ProductName = products.Where(p => p.Id == x.Key).FirstOrDefault().Name, Quantity = x.Sum(s => s.Quantity) })
+                        .OrderByDescending(x => x.Quantity)
+                        .Take(5);
+
+                    //format data into an array of names and an array of quantities
+                    var top5ProductsThisYearNames = top5ProductsThisYear.Select(x => x.ProductName).ToArray();
+                    var top5ProductsThisYearQuantities = top5ProductsThisYear.Select(x => x.Quantity).ToArray();
+
+                    var top5ProductsLastMonthNames = top5ProductsLastMonth.Select(x => x.ProductName).ToArray();
+                    var top5ProductsLastMonthQuantities = top5ProductsLastMonth.Select(x => x.Quantity).ToArray();
+
+                    var top5ProductsLastWeekNames = top5ProductsLastWeek.Select(x => x.ProductName).ToArray();
+                    var top5ProductsLastWeekQuantities = top5ProductsLastWeek.Select(x => x.Quantity).ToArray();
+
+                    var top5ProductsThisYearData = new { labelData = top5ProductsThisYearNames, seriesData = top5ProductsThisYearQuantities };
+                    var top5ProductsLastMonthData = new { labelData = top5ProductsLastMonthNames, seriesData = top5ProductsLastMonthQuantities };
+                    var top5ProductsLastWeekData = new { labelData = top5ProductsLastWeekNames, seriesData = top5ProductsLastWeekQuantities };
+                    
+                
+                    return Ok (new { top5ProductsThisYearData, top5ProductsLastMonthData, top5ProductsLastWeekData });
+                }
+
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -116,7 +218,7 @@ namespace Invify.API.Controllers
             try
             {
                 // Create a new MLContext
-                var mlContext = new MLContext();
+                //var mlContext = new MLContext();
 
                 // Get the historical sales data from the database
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
@@ -129,22 +231,25 @@ namespace Invify.API.Controllers
                 int currentYear = DateTime.Now.Year;
                 int currentMonth = DateTime.Now.Month;
 
+
+
+
                 // Get sales data by month from database up to the current month
-                var salesByMonth = sales.Where(x => x.SaleDate.Year < currentYear || (x.SaleDate.Year == currentYear && x.SaleDate.Month <= currentMonth))
+                int[] salesByMonth = sales
+                    .Where(x => x.SaleDate.Year == currentYear && x.SaleDate.Month <= currentMonth)
                     .GroupBy(x => new { x.SaleDate.Year, x.SaleDate.Month })
-                    .Select(x => new MonthlySaleInput
-                    {
-                        Year = x.Key.Year,
-                        Month = x.Key.Month,
-                        TotalQuantity = x.Sum(y => y.Quantity)
-                    }).ToList();
+                    .Select(x => x.Sum(y => y.Quantity))
+                    .ToArray();
+
+
+                //get how many months left to forecast
+                int monthsLeft = 12 - salesByMonth.Length;
+
 
                 //string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModelsOut\\TotalSalesByMonthModel.mlnet");
                 string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels\\TotalSalesByMonthModel.zip");
 
                 ITransformer trainedModel = mlContext.Model.Load(outputModelPath, out var modelSchema);
-
-                //SsaForecastingTransformer trainedModel = mlContext.Model.LoadWithDataLoader(outputModelPath);
 
                 // Create a PredictionEngine object
                 TimeSeriesPredictionEngine<MonthlySaleInput, MonthlySaleOutput> predictionEngine = trainedModel.CreateTimeSeriesEngine<MonthlySaleInput, MonthlySaleOutput>(mlContext);
@@ -152,19 +257,23 @@ namespace Invify.API.Controllers
                 //MonthlySaleInput for this month
                 MonthlySaleInput input = new MonthlySaleInput
                 {
+                    SaleDate = DateTime.Now,
                     Year = currentYear,
                     Month = currentMonth,
                     TotalQuantity = 0
                 };
 
                 // Make a prediction
-                MonthlySaleOutput prediction = predictionEngine.Predict(input);
+                MonthlySaleOutput prediction = predictionEngine.Predict(12);
 
                 // Get the filtered forecasted values
-                List<float> filteredForecastedValues = _forecastHelper.GetFilteredForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity);
+                //List<float> filteredForecastedValues = _forecastHelper.GetFilteredForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity);
+                
+                //post processed forecast
+                var (nonNegativeForecastedValues, nonNegativeUpperBoundValues, nonNegativeLowerBoundValues) = _forecastHelper.GetNonNegativeForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity, prediction.LowerBoundTotalQuantity);
 
                 //// Return the forecast
-                return Ok(new { actual=salesByMonth, forcasted = prediction });
+                return Ok(new { actualData=salesByMonth, forecastedData = nonNegativeForecastedValues });
             }
             catch (Exception ex)
             {
@@ -228,8 +337,7 @@ namespace Invify.API.Controllers
 
                 var connectionString = _configuration.GetConnectionString("DefaultConnectionString");
 
-                // Create a new MLContext
-                var mlContext = new MLContext();
+               
 
                 DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<MonthlySaleInput>();
                 string query = "  SELECT min([SaleDate]) as SaleDate , CAST(DATEPART(year, [SaleDate])as REAL) as [Year],  CAST(DATEPART(month, [SaleDate]) as REAL) as [Month],  CAST(SUM([Quantity])as REAL) as [TotalQuantity] FROM [dbo].[Sale]" +
@@ -249,7 +357,7 @@ namespace Invify.API.Controllers
                 TrainTestData trainValidationData = mlContext.Data.TrainTestSplit(trainingData, testFraction: 0.1);
 
                 // Configure the forecast estimator
-                var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize: 4, seriesLength: sales.Count(), trainSize: sales.Count(), horizon: 12,
+                var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize: 5, seriesLength: sales.Count(), trainSize: sales.Count(), horizon: 12,
                     outputColumnName: @"TotalQuantity", inputColumnName: @"TotalQuantity", confidenceLevel: 0.95f, confidenceUpperBoundColumn: "UpperBoundTotalQuantity", confidenceLowerBoundColumn: "LowerBoundTotalQuantity");
 
 
@@ -284,12 +392,12 @@ namespace Invify.API.Controllers
                     TotalQuantity = 0
                 };
 
-                MonthlySaleOutput forcastedQuantity = forecastEngine.Predict(12);
+                MonthlySaleOutput forecastedQuantity = forecastEngine.Predict(12);
 
                 //post processed forecast
-                var (nonNegativeForecastedValues, nonNegativeUpperBoundValues, nonNegativeLowerBoundValues) = _forecastHelper.GetNonNegativeForecastedValues(forcastedQuantity.TotalQuantity, forcastedQuantity.UpperBoundTotalQuantity, forcastedQuantity.LowerBoundTotalQuantity);
+                var (nonNegativeForecastedValues, nonNegativeUpperBoundValues, nonNegativeLowerBoundValues) = _forecastHelper.GetNonNegativeForecastedValues(forecastedQuantity.TotalQuantity, forecastedQuantity.UpperBoundTotalQuantity, forecastedQuantity.LowerBoundTotalQuantity);
 
-                MonthlySaleOutput forcastedQuantity2 = forecastEngine.Predict(nextMonth,5);
+                MonthlySaleOutput forecastedQuantity2 = forecastEngine.Predict(nextMonth,5);
 
                 
 
@@ -305,15 +413,16 @@ namespace Invify.API.Controllers
                             $"UpperBound: {prediction.UpperBoundTotalQuantity[0]}";
                     });
 
-                Console.WriteLine("Quantity Forecast");
-                Console.WriteLine("---------------------");
+                string forecastOutputString = "Quantity Forecast\n\"---------------------\n" + string.Join("\n\n", forecastOutput);
+                //Console.WriteLine("Quantity Forecast");
+                //Console.WriteLine("---------------------");
                 //Console.WriteLine(forcastedQuantity.TotalQuantity[0] + " "+ forcastedQuantity.UpperBoundTotalQuantity[0]);
-                foreach (var prediction in forecastOutput)
-                {
-                    Console.WriteLine(prediction);
-                }
+                //foreach (var prediction in forecastOutput)
+                //{
+                //    Console.WriteLine(prediction);
+                //}
 
-                return Ok(new { forcastedQuantity, forcastedQuantity2, nonNegativeLowerBoundValues, nonNegativeForecastedValues, nonNegativeUpperBoundValues });
+                return Ok(new { forecastOutputString, forecastedQuantity, forecastedQuantity2, nonNegativeLowerBoundValues, nonNegativeForecastedValues, nonNegativeUpperBoundValues });
             }
             catch (Exception ex)
             {

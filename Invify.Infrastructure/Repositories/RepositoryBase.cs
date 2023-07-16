@@ -22,6 +22,10 @@ namespace Invify.Infrastructure.Repositories
             return await _context.Set<T>().Where(expression).AsNoTracking().ToListAsync();
         }
 
+        public async Task<int> TotalCountAsync()
+        {
+            return await _context.Set<T>().CountAsync();
+        }
 
         public async Task<bool> CheckForDuplicateAsync(Expression<Func<T, bool>> expression)
         {
