@@ -43,6 +43,9 @@ namespace Invify.API.Controllers
 
         //get total sales by time period
         [HttpGet("dashboard")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetTotalSalesAndRevenueThisYear()
         {
             try
@@ -78,12 +81,15 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 
         //get products that are lower than restock level
         [HttpGet("lowstock")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetLowStockProducts()
         {
             try
@@ -101,12 +107,15 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 
         //get top 5 products by sales
         [HttpGet("top5products")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetTop5Products()
         {
             try
@@ -161,58 +170,107 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 
-        // Get total gross profit by time period
-        [HttpGet("totalgrossprofit")]
+        
+        // get product profitability
+        [HttpGet("productprofitability")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetTotalGrossProfitByTimePeriod(DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> GetProductProfitability()
         {
             try
             {
-                var sales = await _repositoryWrapper.Sale
-                    .FindByConditionAsync(s => s.DateTimeCreated >= startDate && s.DateTimeCreated < endDate);
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+                var products = await _repositoryWrapper.Product.FindAllAsync();
 
-                if (sales != null)
+                var productProfitability = products.Select(p => new
                 {
-                    decimal totalGrossProfit = sales.Sum(s => s.Price - s.Product.Cost);
-                    return Ok(totalGrossProfit);
-                }
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    TotalRevenue = sales.Where(s => s.ProductId == p.Id).Sum(s => s.Price * s.Quantity),
+                    TotalCost = sales.Where(s => s.ProductId == p.Id).Sum(s => p.Cost * s.Quantity),
+                    Profit = sales.Where(s => s.ProductId == p.Id).Sum(s => (s.Price - p.Cost) * s.Quantity)
+                });
 
-                return Ok();
+                return Ok(productProfitability);
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 
-        //analytics revenue by product id
-        [HttpGet("product/{id}/revenue")]
-        public async Task<IActionResult> GetProductRevenue(int id)
+        // get inventory management
+        [HttpGet("inventorymanagement")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetInventoryManagement()
         {
             try
             {
-                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == id);
-                if (product != null)
+                var purchases = await _repositoryWrapper.Purchase.FindAllAsync();
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+                var stockTakes = await _repositoryWrapper.StockTake.FindAllAsync();
+                var products = await _repositoryWrapper.Product.FindAllAsync();
+
+                var inventoryManagement = products.Select(p => new
                 {
-                    var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.ProductId == id);
-                    var revenue = sales.Sum(x => x.Quantity * x.Price);
-                    return Ok(revenue);
-                }
-                return Ok(new Response { Success = false, Message = "product does not exist" });
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    QuantityPurchased = purchases.Where(x => x.ProductId == p.Id).Sum(x => x.Quantity),
+                    QuantitySold = sales.Where(x => x.ProductId == p.Id).Sum(x => x.Quantity),
+                    QuantityTaken = stockTakes.Where(x => x.ProductId == p.Id).Sum(x => x.TakenQuantity),
+                    CurrentInventoryLevel = p.Quantity
+                });
+
+                return Ok(inventoryManagement);
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
+
+        // get sales trends this year
+        [HttpGet("salestrends")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetSalesTrendsThisYear()
+        {
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindAllAsync();
+
+                var salesTrendsByMonth = sales
+                    .Where(x => x.SaleDate.Year == DateTime.Now.Year && x.SaleDate.Month <= DateTime.Now.Month)
+                    .GroupBy(x => new { x.SaleDate.Year, x.SaleDate.Month })
+                    .Select(s => new { TotalSales = s.Sum(x => x.Quantity), TotalRevenue = s.Sum(x => x.Quantity * x.Price) })
+                    .ToArray();
+
+                // Create separate arrays for total sales and total revenue
+                var totalSales = salesTrendsByMonth.Select(x => x.TotalSales).ToArray();
+                var totalRevenue = salesTrendsByMonth.Select(x => (int)x.TotalRevenue).ToArray();
+
+                return Ok(new { totalSales, totalRevenue });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
+            }
+        }
+
 
         //forecast sales by month
         [HttpGet("forecastsales/month")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ForecastTotalSalesByMonth()
         {
             try
@@ -224,7 +282,7 @@ namespace Invify.API.Controllers
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
                 if (sales == null)
                 {
-                    return BadRequest(new Response { Success = false, Message = "No sales record found" });
+                    return Ok(new Response { Success = false, Message = "No sales record found" });
                 }
 
                 // Get the current year and month
@@ -245,9 +303,7 @@ namespace Invify.API.Controllers
                 //get how many months left to forecast
                 int monthsLeft = 12 - salesByMonth.Length;
 
-
-                //string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModelsOut\\TotalSalesByMonthModel.mlnet");
-                string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels\\TotalSalesByMonthModel.zip");
+                string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels","TotalSalesByMonthModel.zip");
 
                 ITransformer trainedModel = mlContext.Model.Load(outputModelPath, out var modelSchema);
 
@@ -265,9 +321,6 @@ namespace Invify.API.Controllers
 
                 // Make a prediction
                 MonthlySaleOutput prediction = predictionEngine.Predict(12);
-
-                // Get the filtered forecasted values
-                //List<float> filteredForecastedValues = _forecastHelper.GetFilteredForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity);
                 
                 //post processed forecast
                 var (nonNegativeForecastedValues, nonNegativeUpperBoundValues, nonNegativeLowerBoundValues) = _forecastHelper.GetNonNegativeForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity, prediction.LowerBoundTotalQuantity);
@@ -277,63 +330,22 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
-            }
-        }
-
-        //forecast sales by product id
-        [HttpGet("salesforecast/product/{id}")]
-        public async Task<IActionResult> ForecastSalesByMonth(int id)
-        {
-            try
-            {
-                // Get the historical sales data from the database
-                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.ProductId == id);
-                if (sales == null)
-                {
-                    return BadRequest(new Response { Success = false, Message = "No sales found for the product" });
-                }
-
-                // Create a new MLContext
-                var mlContext = new MLContext();
-
-                var connectionString = _configuration.GetConnectionString("DefaultConnectionString");
-                DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<ProductSaleData>();
-                //string query = "SELECT YEAR(SaleDate) AS SaleYear,MONTH(SaleDate) AS SaleMonth,COUNT(*) AS TotalSales FROM Sales GROUP BY YEAR(SaleDate), MONTH(SaleDate) ORDER BY SaleYear, SaleMonth;";
-                string query = "SELECT CAST([Id] as REAL), CAST([ProductId] as REAL), CAST([Quantity] as REAL), CAST([Price] as REAL), [SaleDate], [DateTimeCreated], [DateTimeUpdated], [DateTimeDeleted] FROM [dbo].[Sale] WHERE ProductId ="+id;
-
-                DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance,
-                                connectionString,
-                                query);
-
-                // Load data into IDataView
-                IDataView data = loader.Load(dbSource);
-
-                // Split into train (80%), validation (20%) sets
-                TrainTestData trainValidationData = mlContext.Data.TrainTestSplit(data, testFraction: 0.2);
-
-                // Configure the forecast estimator
-                //ForecastingCatalog quantityModel
-
-
-                //// Return the forecast
-                return Ok("");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 
         //train total sales by month
         [HttpGet("trainTotalSalesByMonth")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> TrainTotalSalesByMonth()
         {
             try
             {
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
 
-                string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels\\TotalSalesByMonthModel.zip");
+                string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels","TotalSalesByMonthModel.zip");
 
                 var connectionString = _configuration.GetConnectionString("DefaultConnectionString");
 
@@ -361,26 +373,11 @@ namespace Invify.API.Controllers
                     outputColumnName: @"TotalQuantity", inputColumnName: @"TotalQuantity", confidenceLevel: 0.95f, confidenceUpperBoundColumn: "UpperBoundTotalQuantity", confidenceLowerBoundColumn: "LowerBoundTotalQuantity");
 
 
-                // Define the pipeline
-                //IEstimator<ITransformer> pipeline = mlContext.Transforms.Categorical.OneHotEncoding("Year", "Year")
-                //    .Append(mlContext.Transforms.Categorical.OneHotEncoding("Month", "Month"))
-                //    .Append(mlContext.Transforms.Concatenate("Features", "Year", "Month"))
-                //    .Append(mlContext.Transforms.CopyColumns("Label", "TotalQuantity"))
-                //    .Append(mlContext.Forecasting.ForecastBySsa(windowSize: 20, seriesLength: 58, trainSize: sales.Count(), horizon: 12, outputColumnName: @"TotalQuantity", inputColumnName: @"TotalQuantity"));                  
-                //.Append(mlContext.Regression.Trainers.FastTree());
-
                 // Train the model
                 //ITransformer trainedModel = pipeline.Fit(trainingData);
                 SsaForecastingTransformer trainedModel = pipeline.Fit(trainingData);
 
                 IDataView predictions = trainedModel.Transform(trainingData);
-
-                // Save the trained model to a file
-                //DataViewSchema dataViewSchema = trainingData.Schema;
-
-                //mlContext.Model.Save(trainedModel, dataViewSchema, outputModelPath);
-
-                //mlContext.Model.Save(trainedModel, trainingData.Schema, outputModelPath);
 
                 var forecastEngine = trainedModel.CreateTimeSeriesEngine<MonthlySaleInput, MonthlySaleOutput>(mlContext);
                 forecastEngine.CheckPoint(mlContext, outputModelPath);
@@ -426,48 +423,7 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
-            }
-        }
-
-        [HttpGet("forecast/{id}")]
-        public async Task<IActionResult> ForecastProductSales(int id)
-        {
-            try
-            {
-                // Get the historical sales data for the specified product from the database
-                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(s => s.ProductId == id);
-                if (sales == null)
-                {
-                    return BadRequest(new Response { Success = false, Message = "product does not exist" });
-                }
-
-                // Convert the sales data into a format that can be used with ML.NET
-                var data = sales.Select(s => new ProductSaleData
-                {
-                    ProductId = (float)s.ProductId,
-                    Quantity = s.Quantity,
-                    Price = (float)s.Price,
-                    //SaleDate = s.SaleDate
-                }).ToList();
-
-                var Sample = new ModelInput()
-                { 
-                    Quantity = 4,
-                    //SaleDate = DateTime.Now,
-
-                };
-
-                var result = QuantityByProductSalesModel.Predict(Sample);
-
-
-
-                // Return the forecasted data
-                return Ok(new { result });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
 

@@ -21,7 +21,7 @@ namespace Invify.API.Controllers
         //get all suppliers
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllSuppliersAsync()
         {
@@ -39,6 +39,7 @@ namespace Invify.API.Controllers
         //get supplier by id
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetSupplierById(int id)
         {
@@ -50,7 +51,7 @@ namespace Invify.API.Controllers
                     return Ok(supplier.First());
 
                 }
-                return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+                return Ok(new Response { Success = false, Message = "supplier does not exist" });
             }
             catch (Exception ex)
             {
@@ -58,32 +59,10 @@ namespace Invify.API.Controllers
             }
         }
 
-        ////get suppliers by name
-        //[HttpGet("{name}")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //public async Task<IActionResult> GetSupplierByName(string name)
-        //{
-        //    try
-        //    {
-        //        var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Name == name);
-        //        if (supplier != null)
-        //        {
-        //            return Ok(supplier.First());
-
-        //        }
-        //        return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
-        //    }
-        //}
-
         //create supplier
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateSupplierAsync(Supplier supplier)
         {
@@ -103,6 +82,7 @@ namespace Invify.API.Controllers
         //update supplier
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateSupplier(int id, [FromBody] Supplier supplier)
         {
@@ -112,7 +92,7 @@ namespace Invify.API.Controllers
                 var dbSupplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
                 if (dbSupplier == null)
                 {
-                    return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+                    return Ok(new Response { Success = false, Message = "supplier does not exist" });
                 }
                 var supplierToUpdate = dbSupplier.First();
                 supplierToUpdate.Name = supplier.Name;
@@ -126,13 +106,14 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         //delete supplier
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteSupplier(int id)
         {
@@ -141,7 +122,7 @@ namespace Invify.API.Controllers
                 var supplier = await _repositoryWrapper.Supplier.FindByConditionAsync(c => c.Id == id);
                 if (supplier == null)
                 {
-                    return BadRequest(new Response { Success = false, Message = "supplier does not exist" });
+                    return Ok(new Response { Success = false, Message = "supplier does not exist" });
                 }
                 await _repositoryWrapper.Supplier.DeleteAsync(supplier.First());
                 await _repositoryWrapper.SaveAsync();
@@ -149,7 +130,7 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 

@@ -8,10 +8,8 @@ using NuGet.Protocol.Core.Types;
 
 namespace Invify.API.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles ="Admin")]
     
     public class CategoriesController : ControllerBase
     {
@@ -28,7 +26,6 @@ namespace Invify.API.Controllers
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllCategoriesAsync()
         {
             try
@@ -44,6 +41,7 @@ namespace Invify.API.Controllers
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCategoryById(int id)
         {
@@ -55,15 +53,16 @@ namespace Invify.API.Controllers
                     return Ok(category);
 
                 }
-                return BadRequest(new Response { Success = false, Message = "category does not exist" });
+                return Ok(new Response { Success = false, Message = "category does not exist" });
             }
             catch (Exception ex) {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateCategory(Category category)
         {
@@ -74,12 +73,12 @@ namespace Invify.API.Controllers
                 if (isDuplicate)
                 {
                     // handle duplicate case
-                    return BadRequest(new Response { Success = false, Message = "Category already exists" });
+                    return Ok(new Response { Success = false, Message = "Category already exists" });
                 }
                 // proceed with create/update operation
                 category.DateTimeCreated = DateTime.UtcNow.AddHours(8);
                 var res = await _repositoryWrapper.Category.CreateAsync(category);
-                return Ok();
+                return Ok(res);
                 
             }
             catch (Exception ex)
@@ -90,28 +89,44 @@ namespace Invify.API.Controllers
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCategoryAsync([FromBody] Category category, int id)
         {
-            var isDuplicate = await _repositoryWrapper.Category.CheckForDuplicateAsync(x => x.Name == category.Name);
-            if (isDuplicate)
+            try
             {
-                // handle duplicate case
-                return BadRequest(new Response { Success = false, Message = "Category already exists" });
+                var isDuplicate = await _repositoryWrapper.Category.CheckForDuplicateAsync(x => x.Name == category.Name);
+                if (isDuplicate)
+                {
+                    // handle duplicate case
+                    return Ok(new Response { Success = false, Message = "Category already exists" });
+                }
+                category.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                var res = await _repositoryWrapper.Category.UpdateAsync(category);
+                return Ok(res);
             }
-            category.DateTimeUpdated= DateTime.UtcNow.AddHours(8);
-            await _repositoryWrapper.Category.UpdateAsync(category);
-            return Ok();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while updating, please try again later" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteCategoryAsync(int id)
         {
-            var category = _repositoryWrapper.Category.FindByConditionAsync(c => c.Id == id);
-            await _repositoryWrapper.Category.DeleteAsync(category.Result.First());
-            return Ok();
+            try
+            {
+                var category = _repositoryWrapper.Category.FindByConditionAsync(c => c.Id == id);
+                var res = await _repositoryWrapper.Category.DeleteAsync(category.Result.First());
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while deleting, please try again later" });
+            }
         }
     }
 }

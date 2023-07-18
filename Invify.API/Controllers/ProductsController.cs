@@ -23,8 +23,8 @@ namespace Invify.API.Controllers
 
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllProductsAsync()
         {
             try
@@ -34,13 +34,14 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Internal error, please try again later" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Internal error, please try again later" });
             }
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProductById(int id)
         {
             try
@@ -51,11 +52,11 @@ namespace Invify.API.Controllers
                     return Ok(product.First());
 
                 }
-                return BadRequest(new Response { Success = false, Message = "product does not exist" });
+                return Ok(new Response { Success = false, Message = "product does not exist" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
@@ -63,6 +64,7 @@ namespace Invify.API.Controllers
         [HttpGet("idandname")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProductIdandName()
         {
             try
@@ -73,11 +75,11 @@ namespace Invify.API.Controllers
                     return Ok(product.Select(x => new { x.Id, x.Name }));
 
                 }
-                return BadRequest(new Response { Success = false, Message = "product does not exist" });
+                return Ok(new Response { Success = false, Message = "product does not exist" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
@@ -85,6 +87,7 @@ namespace Invify.API.Controllers
         [HttpGet("sku/{sku}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetProductIdandNameBySKU(string sku)
         {
             try
@@ -99,13 +102,14 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateProduct(Product product)
         {
             try
@@ -125,24 +129,33 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, new Response { Success = false, Message = "Error while creating, please try again later" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while creating, please try again later" });
             }
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateProductAsync([FromBody] Product product, int id)
         {
-            product.DateTimeUpdated= DateTime.UtcNow.AddHours(8);
-            await _repositoryWrapper.Product.UpdateAsync(product);
-            return Ok();
+            try
+            {
+                product.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                var res = await _repositoryWrapper.Product.UpdateAsync(product);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
+            }
         }
 
         //update product stock take
         [HttpPut("stocktake")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateProductStockTakeAsync([FromBody] List<ProductStockTakeDto> productStockTakeDtos)
         {
             try
@@ -168,26 +181,33 @@ namespace Invify.API.Controllers
                     }
                     else
                     {
-                        return BadRequest(new Response { Success = false, Message = "product does not exist" });
+                        return Ok(new Response { Success = false, Message = "product does not exist" });
                     }
                 }
                 return Ok();
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteProductAsync(int id)
         {
-            
-            var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == id);
-            await _repositoryWrapper.Product.DeleteAsync(product.First());
-            return Ok();
+            try
+            {
+                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == id);
+                var res = await _repositoryWrapper.Product.DeleteAsync(product.First());
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
+            }
         }
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML;
-using Invify.MLModel;
 
 namespace Invify.API.Controllers
 {
@@ -27,7 +26,7 @@ namespace Invify.API.Controllers
 
         [HttpGet("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllSalesAsync()
         {
@@ -54,50 +53,9 @@ namespace Invify.API.Controllers
 
         
 
-        //get sales by date
-        [HttpGet("date/{date}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSalesByDate(DateTime date)
-        {
-            try
-            {
-                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.DateTimeCreated >= date.Date && c.DateTimeCreated < date.Date.AddDays(1));
-                if (sales != null)
-                {
-                    return Ok(sales);
-                }
-                return BadRequest();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
-            }
-        }
-
-        //get sales by date range
-        [HttpGet("daterange/{startDate}/{endDate}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetSalesByDateRange(DateTime startDate, DateTime endDate)
-        {
-            try
-            {
-                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.DateTimeCreated >= startDate.Date && c.DateTimeCreated < endDate.Date.AddDays(1));
-                if (sales != null)
-                {
-                    return Ok(sales);
-                }
-                return BadRequest();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
-            }
-        }
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetSalesById(int id)
         {
@@ -113,12 +71,13 @@ namespace Invify.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new Response { Success = false, Message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = ex.Message });
             }
         }
 
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateSales(Sale sale)
         {
@@ -133,7 +92,7 @@ namespace Invify.API.Controllers
                 //check if product quantity is enough
                 if (product.First().Quantity < sale.Quantity)
                 {
-                    return BadRequest(new Response { Success = false, Message = "Product quantity is not enough" });
+                    return Ok(new Response { Success = false, Message = "Product quantity is not enough" });
                 }
                 product.First().Quantity -= sale.Quantity;
                 await _repositoryWrapper.Product.UpdateAsync(product.First());
@@ -149,38 +108,53 @@ namespace Invify.API.Controllers
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateSalesAsync([FromBody] Sale sale, int id)
         {
-            //get current sale quantity
-            var currentSale = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
-            var currentSaleQuantity = currentSale.First().Quantity;
-
-            sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
-            await _repositoryWrapper.Sale.UpdateAsync(sale);
-
-            //product quantity update
-            var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
-            //check if product quantity is enough
-            if (product.First().Quantity < currentSaleQuantity - sale.Quantity)
+            try
             {
-                return BadRequest(new Response { Success = false, Message = "Product quantity is not enough" });
-            }
-            product.First().Quantity -= sale.Quantity;
-            await _repositoryWrapper.Product.UpdateAsync(product.First());
+                //get current sale quantity
+                var currentSale = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
+                var currentSaleQuantity = currentSale.First().Quantity;
 
-            return Ok();
+                sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                await _repositoryWrapper.Sale.UpdateAsync(sale);
+
+                //product quantity update
+                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
+                //check if product quantity is enough
+                if (product.First().Quantity < currentSaleQuantity - sale.Quantity)
+                {
+                    return Ok(new Response { Success = false, Message = "Product quantity is not enough" });
+                }
+                product.First().Quantity -= sale.Quantity;
+                var res = await _repositoryWrapper.Product.UpdateAsync(product.First());
+
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while updating, please try again later" });
+            }
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteSaleAsync(int id)
         {
-
-            var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
-            await _repositoryWrapper.Sale.DeleteAsync(sales.First());
-            return Ok();
+            try
+            {
+                var sales = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
+                var res = await _repositoryWrapper.Sale.DeleteAsync(sales.First());
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Success = false, Message = "Error while deleting, please try again later" });
+            }
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Invify.API.Controllers
                     return Ok(authResponse);
                 }
 
-                return BadRequest(authResponse);
+                return Ok(authResponse);
 
             }
             catch (Exception ex)
@@ -59,7 +59,7 @@ namespace Invify.API.Controllers
                 {
                     return Ok(user);
                 }
-                return BadRequest(user);
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -67,23 +67,12 @@ namespace Invify.API.Controllers
             }
         }
 
-        [HttpPost("checkauth")]
-        public async Task<bool> CheckAuth([FromBody] string userId)
-        {
-            try
-            {
-                var response = await _authenticationService.IsLoggedInAsync(userId);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
 
         //logout
         [HttpGet("logout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Logout()
         {
             try
