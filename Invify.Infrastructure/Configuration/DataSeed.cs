@@ -26,7 +26,7 @@ namespace Invify.Infrastructure.Configuration
             var adminUser = new IdentityUser
             {
                 UserName = adminUserName,
-                Email = "2001427@sit.singaporetech.edu.sg",
+                Email = "admin@invify.com",
                 EmailConfirmed = true,
                 LockoutEnabled= false,
                 

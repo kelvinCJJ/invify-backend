@@ -55,23 +55,24 @@ namespace Invify.API.Controllers
 
                 if (sales != null)
                 {
+
                     //total sales this year
                     var totalSalesThisYear = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year).Sum(x => x.Quantity);
 
                     //total sales last month
-                    var totalSalesLastMonth = sales.Where(x => x.SaleDate.Month == DateTime.Now.Month - 1).Sum(x => x.Quantity);
+                    var totalSalesLastMonth = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year && x.SaleDate.Month == DateTime.Now.AddMonths(-1).Month).Sum(x => x.Quantity);
 
                     //total sales last week
-                    var totalSalesLastWeek = sales.Where(x => x.SaleDate.DayOfYear >= DateTime.Now.DayOfYear - 7).Sum(x => x.Quantity); 
-                    
+                    var totalSalesLastWeek = sales.Where(x => x.SaleDate >= DateTime.Now.AddDays(-7) && x.SaleDate <= DateTime.Now).Sum(x => x.Quantity);
+
                     //total revenue this year
                     var totalRevenueThisYear = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year).Sum(x => x.Price * x.Quantity);
 
                     //total revenue last month
-                    var totalRevenueLastMonth = sales.Where(x => x.SaleDate >= DateTime.Now.AddMonths(-1)).Sum(x => x.Price * x.Quantity);
+                    var totalRevenueLastMonth = sales.Where(x => x.SaleDate.Year == DateTime.Now.Year && x.SaleDate.Month == DateTime.Now.AddMonths(-1).Month).Sum(x => x.Price * x.Quantity);
 
                     //total revenue last week
-                    var totalRevenueLastWeek = sales.Where(x => x.SaleDate > DateTime.Now.AddDays(-7)).Sum(x => x.Price * x.Quantity);
+                    var totalRevenueLastWeek = sales.Where(x => x.SaleDate >= DateTime.Now.AddDays(-7) && x.SaleDate <= DateTime.Now).Sum(x => x.Price * x.Quantity);
 
                     return Ok(new { totalRevenueThisYear, totalRevenueLastMonth, totalRevenueLastWeek, totalSalesThisYear, totalSalesLastMonth, totalSalesLastWeek, totalProducts });
                 }
@@ -250,6 +251,7 @@ namespace Invify.API.Controllers
                 var salesTrendsByMonth = sales
                     .Where(x => x.SaleDate.Year == DateTime.Now.Year && x.SaleDate.Month <= DateTime.Now.Month)
                     .GroupBy(x => new { x.SaleDate.Year, x.SaleDate.Month })
+                    .OrderBy(x => x.Key.Month)
                     .Select(s => new { TotalSales = s.Sum(x => x.Quantity), TotalRevenue = s.Sum(x => x.Quantity * x.Price) })
                     .ToArray();
 
@@ -275,8 +277,6 @@ namespace Invify.API.Controllers
         {
             try
             {
-                // Create a new MLContext
-                //var mlContext = new MLContext();
 
                 // Get the historical sales data from the database
                 var sales = await _repositoryWrapper.Sale.FindAllAsync();
@@ -290,18 +290,18 @@ namespace Invify.API.Controllers
                 int currentMonth = DateTime.Now.Month;
 
 
-
-
-                // Get sales data by month from database up to the current month
-                int[] salesByMonth = sales
+                // Get sales data by month from the start of the current year to current month
+                var salesByMonth = sales
                     .Where(x => x.SaleDate.Year == currentYear && x.SaleDate.Month <= currentMonth)
-                    .GroupBy(x => new { x.SaleDate.Year, x.SaleDate.Month })
-                    .Select(x => x.Sum(y => y.Quantity))
+                    .OrderBy(x => x.SaleDate)
+                    .GroupBy(x => new {x.SaleDate.Year, x.SaleDate.Month } )
+                    .Select (x => x.Sum(y => y.Quantity))                
                     .ToArray();
 
 
+
                 //get how many months left to forecast
-                int monthsLeft = 12 - salesByMonth.Length;
+                int monthsLeft = 12 - salesByMonth.Count();
 
                 string outputModelPath = Path.Combine(Environment.CurrentDirectory, "TrainedModels","TotalSalesByMonthModel.zip");
 
@@ -309,24 +309,16 @@ namespace Invify.API.Controllers
 
                 // Create a PredictionEngine object
                 TimeSeriesPredictionEngine<MonthlySaleInput, MonthlySaleOutput> predictionEngine = trainedModel.CreateTimeSeriesEngine<MonthlySaleInput, MonthlySaleOutput>(mlContext);
-
-                //MonthlySaleInput for this month
-                MonthlySaleInput input = new MonthlySaleInput
-                {
-                    SaleDate = DateTime.Now,
-                    Year = currentYear,
-                    Month = currentMonth,
-                    TotalQuantity = 0
-                };
+                               
 
                 // Make a prediction
                 MonthlySaleOutput prediction = predictionEngine.Predict(12);
+
                 
                 //post processed forecast
                 var (nonNegativeForecastedValues, nonNegativeUpperBoundValues, nonNegativeLowerBoundValues) = _forecastHelper.GetNonNegativeForecastedValues(prediction.TotalQuantity, prediction.UpperBoundTotalQuantity, prediction.LowerBoundTotalQuantity);
-
                 //// Return the forecast
-                return Ok(new { actualData=salesByMonth, forecastedData = nonNegativeForecastedValues });
+                return Ok(new { actualData= salesByMonth, forecastedData = prediction.TotalQuantity });
             }
             catch (Exception ex)
             {
@@ -354,8 +346,6 @@ namespace Invify.API.Controllers
                 DatabaseLoader loader = mlContext.Data.CreateDatabaseLoader<MonthlySaleInput>();
                 string query = "  SELECT min([SaleDate]) as SaleDate , CAST(DATEPART(year, [SaleDate])as REAL) as [Year],  CAST(DATEPART(month, [SaleDate]) as REAL) as [Month],  CAST(SUM([Quantity])as REAL) as [TotalQuantity] FROM [dbo].[Sale]" +
                     " GROUP BY DATEPART(year, [SaleDate]), DATEPART(month, [SaleDate])ORDER BY [Year], [Month]";
-                //string query = " SELECT [SaleDate] , CAST(DATEPART(year, [SaleDate])as REAL) as [Year],  CAST(DATEPART(month, [SaleDate]) as REAL) as [Month],  CAST(SUM([Quantity])as REAL) as [TotalQuantity] FROM [dbo].[Sale]" +
-                //    " GROUP BY [SaleDate], DATEPART(year, [SaleDate]), DATEPART(month, [SaleDate])ORDER BY [Year], [Month], [SaleDate]";
 
                 DatabaseSource dbSource = new DatabaseSource(SqlClientFactory.Instance,
                                 connectionString,
@@ -369,7 +359,7 @@ namespace Invify.API.Controllers
                 TrainTestData trainValidationData = mlContext.Data.TrainTestSplit(trainingData, testFraction: 0.1);
 
                 // Configure the forecast estimator
-                var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize: 5, seriesLength: sales.Count(), trainSize: sales.Count(), horizon: 12,
+                var pipeline = mlContext.Forecasting.ForecastBySsa(windowSize: 6, seriesLength: sales.Count(), trainSize: sales.Count(), horizon: 12,
                     outputColumnName: @"TotalQuantity", inputColumnName: @"TotalQuantity", confidenceLevel: 0.95f, confidenceUpperBoundColumn: "UpperBoundTotalQuantity", confidenceLowerBoundColumn: "LowerBoundTotalQuantity");
 
 
@@ -426,12 +416,6 @@ namespace Invify.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,new Response { Success = false, Message = ex.Message });
             }
         }
-
-        
-
-
-
-
 
     }
 }
