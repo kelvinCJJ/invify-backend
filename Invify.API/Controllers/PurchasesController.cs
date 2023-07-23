@@ -121,6 +121,9 @@ namespace Invify.API.Controllers
                 {
                     return NotFound(new Response { Success = false, Message = "Product not found" });
                 }
+                //check if purchase product changed
+                var purchaseToUpdate = await _repositoryWrapper.Purchase.FindByConditionAsync(x => x.Id == purchase.Id);
+
                 var purchases = await _repositoryWrapper.Purchase.UpdateAsync(purchase);
                 return Ok(purchases);
             }

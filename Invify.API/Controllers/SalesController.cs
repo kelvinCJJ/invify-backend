@@ -118,18 +118,41 @@ namespace Invify.API.Controllers
                 var currentSale = await _repositoryWrapper.Sale.FindByConditionAsync(c => c.Id == id);
                 var currentSaleQuantity = currentSale.First().Quantity;
 
-                sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
-                await _repositoryWrapper.Sale.UpdateAsync(sale);
-
-                //product quantity update
-                var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
-                //check if product quantity is enough
-                if (product.First().Quantity < currentSaleQuantity - sale.Quantity)
+                //check if sale product is changed
+                if (sale.ProductId != currentSale.First().ProductId)
                 {
-                    return Ok(new Response { Success = false, Message = "Product quantity is not enough" });
+                    //product quantity update
+                    var differentProduct = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
+                    //check if product quantity is enough
+                    if (differentProduct.First().Quantity < sale.Quantity)
+                    {
+                        return Ok(new Response { Success = false, Message = "Product quantity is not enough" });
+                    }
+                    differentProduct.First().Quantity -= sale.Quantity;
+                    var res1 =await _repositoryWrapper.Product.UpdateAsync(differentProduct.First());
+
+                    //update previous product quantity
+                    var previousProduct = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == currentSale.FirstOrDefault().ProductId);
+                    previousProduct.FirstOrDefault().Quantity += currentSaleQuantity;
+                    var res2 = await _repositoryWrapper.Product.UpdateAsync(previousProduct.First());
+
+                    //update sale
+                    sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                    sale.Product = differentProduct.First();
+                    var response = await _repositoryWrapper.Sale.UpdateAsync(sale);
+                    return Ok(response );
                 }
-                product.First().Quantity -= sale.Quantity;
-                var res = await _repositoryWrapper.Product.UpdateAsync(product.First());
+                    //product quantity update
+                    var product = await _repositoryWrapper.Product.FindByConditionAsync(c => c.Id == sale.ProductId);
+                    //check if product quantity is enough
+                    if (product.First().Quantity < currentSaleQuantity - sale.Quantity)
+                    {
+                        return Ok(new Response { Success = false, Message = "Product quantity is not enough" });
+                    }
+                    product.First().Quantity -= sale.Quantity;
+                    await _repositoryWrapper.Product.UpdateAsync(product.First());
+                    sale.DateTimeUpdated = DateTime.UtcNow.AddHours(8);
+                    var res =await _repositoryWrapper.Sale.UpdateAsync(sale);
 
                 return Ok(res);
             }
